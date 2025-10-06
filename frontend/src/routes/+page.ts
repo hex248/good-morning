@@ -5,6 +5,7 @@ interface User {
     username: string;
     email: string;
     uniqueCode: string;
+    picture?: string;
 }
 
 interface PageData {
@@ -19,7 +20,6 @@ export async function load({ fetch }: { fetch: typeof globalThis.fetch }): Promi
         });
         if (response.ok) {
             const data = await response.json();
-            console.log(data.user)
             return {
                 user: data.user,
                 authenticated: true
