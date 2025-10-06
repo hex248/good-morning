@@ -137,14 +137,17 @@ export default function Home() {
                                             </p>
                                         </div>
                                         <p className="text-center">
-                                            Your partner hasn't sent a notice yet. Check back later!
+                                            Your partner hasn't sent a notice
+                                            yet. Check back later!
                                         </p>
-                                        <Link
-                                            href="/create-notice"
-                                            className="cursor-pointer"
-                                        >
-                                            <Button>Create Notice</Button>
-                                        </Link>
+                                        {!alreadySent && (
+                                            <Link
+                                                href="/create-notice"
+                                                className="cursor-pointer"
+                                            >
+                                                <Button>Create Notice</Button>
+                                            </Link>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ) : (
