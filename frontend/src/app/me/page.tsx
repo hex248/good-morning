@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { checkAuth, getUserData, editUsername, type User } from "@/lib/api";
+import Image from "next/image";
 
 export default function MePage() {
     const [authenticated, setAuthenticated] = useState(false);
@@ -71,10 +72,12 @@ export default function MePage() {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">
                     {user.picture && (
-                        <img
-                            src={user.picture}
+                        <Image
+                            src={user.picture || "/default-avatar.png"}
                             alt="avatar"
                             className="w-24 h-24 rounded-full border-2 border-border"
+                            width={96}
+                            height={96}
                         />
                     )}
                     {editMode ? (
@@ -119,10 +122,12 @@ export default function MePage() {
                         <CardTitle>Your Partner</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center gap-4">
-                        <img
-                            src={partner.picture}
+                        <Image
+                            src={partner.picture || "/default-avatar.png"}
                             alt="partner avatar"
                             className="w-24 h-24 rounded-full border-2 border-border"
+                            width={96}
+                            height={96}
                         />
                         <p className="text-2xl font-semibold">
                             {partner.username}

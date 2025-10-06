@@ -12,6 +12,7 @@ import {
     getUserData,
     type User,
 } from "@/lib/api";
+import Image from "next/image";
 
 export default function Home() {
     const [authenticated, setAuthenticated] = useState(false);
@@ -62,10 +63,14 @@ export default function Home() {
                                 <CardTitle>Your Partner</CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center gap-4">
-                                <img
-                                    src={partner.picture}
+                                <Image
+                                    src={
+                                        partner.picture || "/default-avatar.png"
+                                    }
                                     alt="partner avatar"
                                     className="w-24 h-24 rounded-full border-2 border-border"
+                                    width={96}
+                                    height={96}
                                 />
                                 <p className="text-2xl font-semibold">
                                     {partner.username}
