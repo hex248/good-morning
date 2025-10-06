@@ -106,6 +106,22 @@ export default function CreateNoticePage() {
         return null; // will redirect
     }
 
+    if (!partner) {
+        return (
+            <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-8 p-4">
+                <h1 className="text-4xl font-semibold">Create Notice</h1>
+                <Card className="w-full max-w-md">
+                    <CardContent className="flex flex-col items-center gap-4 p-8">
+                        <p>You need to pair with a partner first.</p>
+                        <Link href="/">
+                            <Button>Back to Home</Button>
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
     if (alreadySent) {
         return (
             <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-8 p-4">
