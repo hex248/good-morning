@@ -440,8 +440,12 @@ func handleCreateNotice(c *gin.Context) {
 
 	// resetAt is midnight in partner's timezone
 	now := time.Now()
-	partnerTime := now.In(partner.Timezone)
-	midnight := time.Date(partnerTime.Year(), partnerTime.Month(), partnerTime.Day()+1, 0, 0, 0, 0, partnerTime.Location())
+	location, err := time.LoadLocation(partner.Timezone)
+	if err != nil {
+		location = time.UTC // fallback to UTC if invalid timezone
+	}
+	partnerTime := now.In(location)
+	midnight := time.Date(partnerTime.Year(), partnerTime.Month(), partnerTime.Day()+1, 0, 0, 0, 0, location)
 	resetAt := midnight
 
 	notice := models.Notice{
