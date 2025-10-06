@@ -188,6 +188,7 @@ func generateUniqueCode() string {
 	adjective := adjectives[time.Now().UnixNano()%int64(len(adjectives))]
 	color := colors[time.Now().UnixNano()%int64(len(colors))]
 	animal := animals[time.Now().UnixNano()%int64(len(animals))]
+	
 	return adjective + "_" + color + "_" + animal
 }
 
@@ -205,6 +206,64 @@ func generateJWT(userID string) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
+func authMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenString, err := c.Cookie("jwt")
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			c.Abort()
+			return
+		}
+
+		secret := os.Getenv("JWT_SECRET")
+		if secret == "" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
+			c.Abort()
+			return
+		}
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method")
+			}
+			return []byte(secret), nil
+		})
+
+		if err != nil || !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			c.Abort()
+			return
+		}
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			userID := claims["user_id"].(string)
+			c.Set("user_id", userID)
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func handleGetMe(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	var user models.User
+	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
 func main() {
 	database.InitDB()
 	database.DB.AutoMigrate(&models.User{}, &models.Notice{})
@@ -219,6 +278,13 @@ func main() {
 	// oauth routes
 	r.GET("/auth/google", handleGoogleLogin)
 	r.GET("/auth/google/callback", handleGoogleCallback)
+
+	// protected routes
+	protected := r.Group("/")
+	protected.Use(authMiddleware())
+	{
+		protected.GET("/me", handleGetMe)
+	}
 
 	log.Fatal(r.Run(":24804"))
 }
