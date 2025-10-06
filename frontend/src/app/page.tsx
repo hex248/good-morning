@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import Avatar from "@/components/Avatar";
 import {
     loginWithGoogle,
@@ -75,6 +75,9 @@ export default function Home() {
                                         {partner.username}
                                     </p>
                                 </div>
+                                <Link href="/create-notice" className="cursor-pointer">
+                                    <Button>Create Notice</Button>
+                                </Link>
                             </CardContent>
                         </Card>
                     ) : (
@@ -102,10 +105,7 @@ export default function Home() {
                     </Link>
                 </div>
             ) : (
-                <Button
-                    onClick={loginWithGoogle}
-                    variant="outline"
-                >
+                <Button onClick={loginWithGoogle} variant="outline">
                     Login with Google
                 </Button>
             )}
