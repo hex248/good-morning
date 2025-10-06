@@ -36,6 +36,14 @@ type GoogleUser struct {
 	Locale        string `json:"locale"`
 }
 
+func redirectToFrontend(c *gin.Context, path string) {
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:3000"
+	}
+	c.Redirect(http.StatusTemporaryRedirect, frontendURL+path)
+}
+
 func generateState() string {
 	b := make([]byte, 32)
 	rand.Read(b)
@@ -113,8 +121,7 @@ func handleGoogleCallback(c *gin.Context) {
 	c.SetCookie("jwt", jwtToken, 86400, "/", "", false, true) // 24 hours, HTTP-only, secure if HTTPS
 
 	// redirect to frontend
-	frontendURL := os.Getenv("FRONTEND_URL")
-	c.Redirect(http.StatusTemporaryRedirect, frontendURL+"/")
+	redirectToFrontend(c, "/")
 }
 
 type TokenResponse struct {
