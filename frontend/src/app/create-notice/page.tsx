@@ -301,51 +301,58 @@ export default function CreateNoticePage() {
                     </CardContent>
                 </Card>
                 {preview && (
-                    <Card className="mt-8">
+                    <Card className="mt-8 max-w-2xl mx-auto">
                         <CardHeader>
                             <CardTitle>Preview</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div
-                                className="p-4 rounded-lg"
+                                className="relative mx-auto border-4 border-gray-800 rounded-3xl overflow-hidden shadow-lg"
                                 style={{
+                                    aspectRatio: "9/16",
                                     backgroundColor:
                                         formData.backgroundColor || "#f0f0f0",
                                     color:
                                         formData.foregroundColor || "#000000",
                                 }}
                             >
-                                {formData.message && (
-                                    <p className="mb-4">{formData.message}</p>
-                                )}
-                                {formData.photoUrl && (
-                                    <Image
-                                        src={formData.photoUrl}
-                                        alt="notice photo"
-                                        className="w-96 h-96 object-cover rounded mb-4"
-                                        width={0}
-                                        height={0}
-                                        unoptimized
-                                    />
-                                )}
-                                {formData.songUrl && (
-                                    <div className="mb-4">
-                                        <p className="font-semibold">Song:</p>
-                                        <a
-                                            href={formData.songUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-500 underline"
-                                        >
-                                            {formData.songUrl}
-                                        </a>
-                                        {formData.songExplanation && (
-                                            <p className="mt-2">
-                                                {formData.songExplanation}
+                                <div className="p-4 h-full flex flex-col justify-center items-center text-center">
+                                    {formData.message && (
+                                        <p className="mb-4 text-[175%]">
+                                            {formData.message}
+                                        </p>
+                                    )}
+                                    {formData.photoUrl && (
+                                        <Image
+                                            src={formData.photoUrl}
+                                            alt="notice photo"
+                                            className="w-[100%] h-[40%] object-cover rounded mb-4"
+                                            width={0}
+                                            height={0}
+                                            unoptimized
+                                        />
+                                    )}
+                                    {formData.songUrl && (
+                                        <div className="mb-4 text-[160%]">
+                                            <p className="font-semibold">
+                                                Song:
                                             </p>
-                                        )}
-                                    </div>
-                                )}
+                                            <a
+                                                href={formData.songUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-500 underline"
+                                            >
+                                                {formData.songUrl}
+                                            </a>
+                                            {formData.songExplanation && (
+                                                <p className="mt-2">
+                                                    {formData.songExplanation}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
