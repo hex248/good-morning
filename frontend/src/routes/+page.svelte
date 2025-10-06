@@ -33,9 +33,9 @@
 <body>
     <h1>good morning!</h1>
     {#if authenticated && user}
-        {#if user.picture}
+        <!-- {#if user.picture}
             <img src={user.picture} id="avatar" alt="avatar" />
-        {/if}
+        {/if} -->
         <p>Welcome, {user.username}!</p>
         <p>Your unique code: {user.uniqueCode}</p>
     {:else}
