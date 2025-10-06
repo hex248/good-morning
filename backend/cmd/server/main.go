@@ -487,7 +487,7 @@ func handleGetNotice(c *gin.Context) {
 
 	// find today's notice for the user
 	var notice models.Notice
-	if err := database.DB.Where("recipient_id = ? AND reset_at > ?", user.ID, time.Now()).First(&notice).Error; err != nil {
+	if err := database.DB.Where("recipient_id = ? AND reset_at > ?", user.ID, time.Now()).Last(&notice).Error; err != nil {
 		if err.Error() == "record not found" {
 			c.JSON(http.StatusOK, gin.H{"notice": nil})
 			return
