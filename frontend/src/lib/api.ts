@@ -33,9 +33,9 @@ export async function checkAuth(): Promise<AuthResponse> {
                 authenticated: true,
             };
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         // 401 is expected for unauthenticated users
-        if (error.response?.status !== 401) {
+        if (axios.isAxiosError(error) && error.response?.status !== 401) {
             console.error("authentication check failed:", error);
         }
     }
@@ -59,8 +59,8 @@ export async function pairUser(
                 message: response.data.error || "failed to pair",
             };
         }
-    } catch (error: any) {
-        if (error.response?.status !== 401) {
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error) && error.response?.status !== 401) {
             console.error("failed to pair user:", error);
         }
         return { success: false, message: "failed to pair" };
@@ -79,8 +79,8 @@ export async function getUserData(): Promise<{
                 partner: response.data.partner,
             };
         }
-    } catch (error: any) {
-        if (error.response?.status !== 401) {
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error) && error.response?.status !== 401) {
             console.error("failed to get user data:", error);
         }
     }
