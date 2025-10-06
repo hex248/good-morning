@@ -113,7 +113,8 @@ func handleGoogleCallback(c *gin.Context) {
 	c.SetCookie("jwt", jwtToken, 86400, "/", "", false, true) // 24 hours, HTTP-only, secure if HTTPS
 
 	// redirect to frontend
-	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:5173/")
+	frontendURL := os.Getenv("FRONTEND_URL")
+	c.Redirect(http.StatusTemporaryRedirect, frontendURL+"/")
 }
 
 type TokenResponse struct {
@@ -400,7 +401,8 @@ func main() {
 
 	// CORS middleware
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:5173"} // frontend origin
+	frontendURL := os.Getenv("FRONTEND_URL")
+	config.AllowOrigins = []string{frontendURL}
 	config.AllowCredentials = true
 	r.Use(cors.New(config))
 
