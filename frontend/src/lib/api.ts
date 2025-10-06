@@ -113,7 +113,8 @@ export async function createNotice(noticeData: {
     photoUrl?: string;
     songUrl?: string;
     songExplanation?: string;
-    color: string;
+    foregroundColor?: string;
+    backgroundColor?: string;
 }): Promise<{ success: boolean; message: string }> {
     try {
         const response = await api.post("/notices/create", noticeData);
