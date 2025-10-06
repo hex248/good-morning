@@ -422,6 +422,11 @@ func main() {
 	// oauth routes
 	r.GET("/auth/google", handleGoogleLogin)
 	r.GET("/auth/google/callback", handleGoogleCallback)
+	r.GET("/logout", func(c *gin.Context) {
+		// clear JWT cookie
+		c.SetCookie("jwt", "", -1, "/", "", false, true)
+		redirectToFrontend(c, "/")
+	})
 
 	// protected routes
 	protected := r.Group("/")
