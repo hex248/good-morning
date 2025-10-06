@@ -366,7 +366,7 @@ export default function CreateNoticePage() {
                                                 {formData.songUrl}
                                             </a>
                                             {formData.songExplanation && (
-                                                <p className="mt-2">
+                                                <p>
                                                     {formData.songExplanation}
                                                 </p>
                                             )}
