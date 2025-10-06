@@ -108,6 +108,31 @@ export async function editUsername(
     }
 }
 
+export async function createNotice(noticeData: {
+    message?: string;
+    photoUrl?: string;
+    songUrl?: string;
+    songExplanation?: string;
+    color: string;
+}): Promise<{ success: boolean; message: string }> {
+    try {
+        const response = await api.post("/notices/create", noticeData);
+        if (response.status === 200) {
+            return { success: true, message: "notice created successfully" };
+        } else {
+            return {
+                success: false,
+                message: response.data.error || "failed to create notice",
+            };
+        }
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error) && error.response?.status !== 401) {
+            console.error("failed to create notice:", error);
+        }
+        return { success: false, message: "failed to create notice" };
+    }
+}
+
 export function loginWithGoogle() {
     window.location.href = `${API_BASE_URL}/auth/google`;
 }
