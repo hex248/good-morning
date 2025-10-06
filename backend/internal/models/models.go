@@ -35,6 +35,10 @@ type Notice struct {
 	ResetAt         time.Time  `json:"resetAt"`
 }
 
+func (Notice) TableName() string {
+	return "Notice"
+}
+
 func (u *User) BeforeCreate(tx *gorm.DB) error {
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
@@ -44,4 +48,8 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 func (u *User) BeforeUpdate(tx *gorm.DB) error {
 	u.UpdatedAt = time.Now()
 	return nil
+}
+
+func (User) TableName() string {
+	return "User"
 }
