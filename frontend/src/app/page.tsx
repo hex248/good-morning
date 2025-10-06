@@ -15,7 +15,7 @@ import {
     type User,
 } from "@/lib/api";
 import Image from "next/image";
-import { Dot, Menu, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export default function Home() {
     const [authenticated, setAuthenticated] = useState(false);
@@ -23,12 +23,15 @@ export default function Home() {
     const [partner, setPartner] = useState<User | null>(null);
     const [notice, setNotice] = useState<any | null>(null);
     const [hasNotice, setHasNotice] = useState(false);
+    const [alreadySent, setAlreadySent] = useState(false);
     const [pairCode, setPairCode] = useState("");
     const [pairMessage, setPairMessage] = useState("");
     const [menuOpen, setMenuOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const today = new Date().toISOString().split("T")[0];
+
         const initAuth = async () => {
             const authData = await checkAuth();
             setAuthenticated(authData.authenticated);
@@ -38,6 +41,10 @@ export default function Home() {
                 const noticeData = await getNotice();
                 setNotice(noticeData.notice);
                 setHasNotice(noticeData.notice !== null);
+
+                const lastSent = localStorage.getItem("lastSentDate");
+
+                setAlreadySent(lastSent === today);
             }
             setLoading(false);
         };

@@ -38,6 +38,7 @@ export default function CreateNoticePage() {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
     const [preview, setPreview] = useState(false);
+    const [alreadySent, setAlreadySent] = useState(false);
     const [formData, setFormData] = useState({
         message: "",
         photoUrl: "",
@@ -49,6 +50,8 @@ export default function CreateNoticePage() {
     const router = useRouter();
 
     useEffect(() => {
+        const today = new Date().toISOString().split("T")[0];
+
         const initAuth = async () => {
             const authData = await checkAuth();
             if (!authData.authenticated) {
@@ -58,6 +61,11 @@ export default function CreateNoticePage() {
             setAuthenticated(true);
             setUser(authData.user);
             setPartner(authData.partner);
+
+            const lastSent = localStorage.getItem("lastSentDate");
+            if (lastSent === today) {
+                setAlreadySent(true);
+            }
             setLoading(false);
         };
         initAuth();
@@ -79,6 +87,9 @@ export default function CreateNoticePage() {
         const result = await createNotice(formData);
         setMessage(result.message);
         if (result.success) {
+            const today = new Date().toISOString().split("T")[0];
+            localStorage.setItem("lastSentDate", today);
+            setAlreadySent(true);
             router.push("/");
         }
     };
