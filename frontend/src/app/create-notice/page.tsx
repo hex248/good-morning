@@ -114,126 +114,149 @@ export default function CreateNoticePage() {
     return (
         <div className="min-h-screen bg-background text-foreground font-sans p-4">
             <div className="max-w-2xl mx-auto">
-                <h1 className="text-4xl font-semibold mb-8">Create Notice</h1>
+                <h1 className="text-4xl font-semibold mb-4 text-center">
+                    Create Notice
+                </h1>
                 <Card>
                     <CardHeader>
                         <CardTitle>Notice Details</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div>
-                            <Label className="block text-sm font-medium mb-2">
-                                Foreground Color
-                            </Label>
-                            <Select
-                                value={formData.foregroundColor}
-                                onValueChange={(value) =>
-                                    handleInputChange("foregroundColor", value)
-                                }
-                            >
-                                <SelectTrigger
-                                    style={{
-                                        color: formData.foregroundColor,
-                                        backgroundColor:
-                                            formData.foregroundColor ===
-                                            "#ffffff"
-                                                ? "transparent"
-                                                : formData.foregroundColor ===
-                                                  "#000000"
-                                                ? "#ffffff"
-                                                : undefined,
-                                        borderColor:
-                                            formData.foregroundColor ||
-                                            undefined,
-                                    }}
-                                    chevronColor={
-                                        formData.foregroundColor || undefined
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <Label className="block text-sm font-medium mb-2">
+                                    Foreground Color
+                                </Label>
+                                <Select
+                                    value={formData.foregroundColor}
+                                    onValueChange={(value) =>
+                                        handleInputChange(
+                                            "foregroundColor",
+                                            value
+                                        )
                                     }
                                 >
-                                    <SelectValue placeholder="Select a foreground colour" />
-                                </SelectTrigger>
-                                <SelectContent align="start">
-                                    <div className="grid grid-cols-2 gap-2 p-2">
-                                        {colors.map((color) => (
-                                            <SelectItem
-                                                key={color.value}
-                                                value={color.value}
-                                                style={{
-                                                    color: color.value,
-                                                    backgroundColor:
-                                                        color.value ===
-                                                        "#ffffff"
-                                                            ? "#00000000"
-                                                            : color.value ===
-                                                              "#000000"
-                                                            ? "#ffffff"
-                                                            : undefined,
-                                                }}
-                                                className="cursor-pointer border-1 border-popover hover:border-foreground"
-                                            >
-                                                {color.label}
-                                            </SelectItem>
-                                        ))}
-                                    </div>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div>
-                            <Label className="block text-sm font-medium mb-2">
-                                Background Color
-                            </Label>
-                            <Select
-                                value={formData.backgroundColor}
-                                onValueChange={(value) =>
-                                    handleInputChange("backgroundColor", value)
-                                }
-                            >
-                                <SelectTrigger
-                                    style={{
-                                        color: formData.backgroundColor,
-                                        backgroundColor:
+                                    <SelectTrigger
+                                        style={{
+                                            color: formData.foregroundColor,
+                                            backgroundColor:
+                                                formData.foregroundColor ===
+                                                "#ffffff"
+                                                    ? "transparent"
+                                                    : formData.foregroundColor ===
+                                                      "#000000"
+                                                    ? "#ffffff"
+                                                    : undefined,
+                                            borderColor:
+                                                formData.foregroundColor ||
+                                                undefined,
+                                        }}
+                                        chevronColor={
+                                            formData.foregroundColor ||
+                                            undefined
+                                        }
+                                    >
+                                        <SelectValue placeholder="Select a foreground colour" />
+                                    </SelectTrigger>
+                                    <SelectContent align="start">
+                                        <div className="grid grid-cols-2 gap-2 p-2">
+                                            {colors.map((color) => (
+                                                <SelectItem
+                                                    key={color.value}
+                                                    value={color.value}
+                                                    style={{
+                                                        color: color.value,
+                                                        backgroundColor:
+                                                            color.value ===
+                                                            "#ffffff"
+                                                                ? "#00000000"
+                                                                : color.value ===
+                                                                  "#000000"
+                                                                ? "#ffffff"
+                                                                : undefined,
+                                                    }}
+                                                    className="cursor-pointer border-1 border-popover hover:border-foreground"
+                                                >
+                                                    {color.label}
+                                                </SelectItem>
+                                            ))}
+                                        </div>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <Label className="block text-sm font-medium mb-2">
+                                    Background Color
+                                </Label>
+                                <Select
+                                    value={formData.backgroundColor}
+                                    onValueChange={(value) =>
+                                        handleInputChange(
+                                            "backgroundColor",
+                                            value
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        style={{
+                                            color:
+                                                formData.backgroundColor ===
+                                                "#ffffff"
+                                                    ? "#000000"
+                                                    : formData.backgroundColor ===
+                                                      "#000000"
+                                                    ? "#ffffff"
+                                                    : undefined,
+                                            backgroundColor:
+                                                formData.backgroundColor,
+                                            borderColor:
+                                                formData.backgroundColor ===
+                                                "#ffffff"
+                                                    ? "#000000"
+                                                    : formData.backgroundColor ===
+                                                      "#000000"
+                                                    ? "#ffffff"
+                                                    : undefined,
+                                        }}
+                                        chevronColor={
                                             formData.backgroundColor ===
                                             "#ffffff"
-                                                ? "transparent"
+                                                ? "#000000"
                                                 : formData.backgroundColor ===
                                                   "#000000"
                                                 ? "#ffffff"
-                                                : undefined,
-                                        borderColor:
-                                            formData.backgroundColor ||
-                                            undefined,
-                                    }}
-                                    chevronColor={
-                                        formData.backgroundColor || undefined
-                                    }
-                                >
-                                    <SelectValue placeholder="Select a background colour" />
-                                </SelectTrigger>
-                                <SelectContent align="start">
-                                    <div className="grid grid-cols-2 gap-2 p-2">
-                                        {colors.map((color) => (
-                                            <SelectItem
-                                                key={color.value}
-                                                value={color.value}
-                                                style={{
-                                                    backgroundColor:
-                                                        color.value,
-                                                    color:
-                                                        color.value ===
-                                                        "#ffffff"
-                                                            ? "#000000"
-                                                            : color.value ===
-                                                              "#000000"
-                                                            ? "#ffffff"
-                                                            : undefined,
-                                                }}
-                                                className="cursor-pointer border-1 border-popover hover:border-foreground"
-                                            >
-                                                {color.label}
-                                            </SelectItem>
-                                        ))}
-                                    </div>
-                                </SelectContent>
-                            </Select>
+                                                : undefined
+                                        }
+                                    >
+                                        <SelectValue placeholder="Select a background colour" />
+                                    </SelectTrigger>
+                                    <SelectContent align="start">
+                                        <div className="grid grid-cols-2 gap-2 p-2">
+                                            {colors.map((color) => (
+                                                <SelectItem
+                                                    key={color.value}
+                                                    value={color.value}
+                                                    style={{
+                                                        backgroundColor:
+                                                            color.value,
+                                                        color:
+                                                            color.value ===
+                                                            "#ffffff"
+                                                                ? "#000000"
+                                                                : color.value ===
+                                                                  "#000000"
+                                                                ? "#ffffff"
+                                                                : undefined,
+                                                    }}
+                                                    className="cursor-pointer border-1 border-popover hover:border-foreground"
+                                                >
+                                                    {color.label}
+                                                </SelectItem>
+                                            ))}
+                                        </div>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         <div>
                             <Label className="block text-sm font-medium mb-2">
@@ -307,7 +330,7 @@ export default function CreateNoticePage() {
                         </CardHeader>
                         <CardContent>
                             <div
-                                className="relative mx-auto border-4 border-gray-800 rounded-3xl overflow-hidden shadow-lg"
+                                className="relative mx-auto border-2 rounded-3xl overflow-hidden shadow-lg"
                                 style={{
                                     aspectRatio: "9/16",
                                     backgroundColor:
@@ -316,7 +339,7 @@ export default function CreateNoticePage() {
                                         formData.foregroundColor || "#000000",
                                 }}
                             >
-                                <div className="p-4 h-full flex flex-col justify-center items-center text-center">
+                                <div className="p-4 h-full flex flex-col justify-center items-center text-center gap-4">
                                     {formData.message && (
                                         <p className="text-[175%] whitespace-pre-wrap">
                                             {formData.message}
@@ -326,17 +349,14 @@ export default function CreateNoticePage() {
                                         <Image
                                             src={formData.photoUrl}
                                             alt="notice photo"
-                                            className="w-[100%] h-[40%] object-cover rounded mb-4"
+                                            className="w-[100%] h-[40%] object-cover rounded-[12px]"
                                             width={0}
                                             height={0}
                                             unoptimized
                                         />
                                     )}
                                     {formData.songUrl && (
-                                        <div className="mb-4 text-[160%]">
-                                            <p className="font-semibold">
-                                                Song:
-                                            </p>
+                                        <div className="text-[160%]">
                                             <a
                                                 href={formData.songUrl}
                                                 target="_blank"
