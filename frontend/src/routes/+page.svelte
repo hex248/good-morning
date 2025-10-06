@@ -3,8 +3,16 @@
     <meta name="description" content="Good Morning PWA" />
 </svelte:head>
 
+<script>
+    // biome-ignore lint/correctness/noUnusedVariables: <this is used :(>
+    function loginWithGoogle() {
+        window.location.href = 'http://localhost:24804/auth/google';
+    }
+</script>
+
 <body>
     <h1>good morning!</h1>
+    <button on:click={loginWithGoogle}>Login with Google</button>
 </body>
 
 <style>
