@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"good_morning_backend/internal/database"
 	"good_morning_backend/internal/models"
 	"io"
@@ -100,8 +101,15 @@ func handleGoogleCallback(c *gin.Context) {
 		}
 	}
 
-	// for now, just return user info (jwt later)
-	c.JSON(http.StatusOK, gin.H{"user": user})
+	// generate JWT and set in cookie
+	jwtToken, err := generateJWT(user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+	c.SetCookie("jwt", jwtToken, 86400, "/", "", false, true) // 24 hours, HTTP-only, secure if HTTPS
+
+	c.JSON(http.StatusOK, gin.H{"message": "Authentication successful"})
 }
 
 type TokenResponse struct {
@@ -181,6 +189,20 @@ func generateUniqueCode() string {
 	color := colors[time.Now().UnixNano()%int64(len(colors))]
 	animal := animals[time.Now().UnixNano()%int64(len(animals))]
 	return adjective + "_" + color + "_" + animal
+}
+
+func generateJWT(userID string) (string, error) {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		return "", fmt.Errorf("JWT_SECRET not set")
+	}
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+		"iat":     time.Now().Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secret))
 }
 
 func main() {
