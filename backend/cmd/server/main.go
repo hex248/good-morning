@@ -173,12 +173,14 @@ func generateUserID() string {
 }
 
 func generateUniqueCode() string {
-	// super simple unique code generator for now
-	colors := []string{"red", "blue", "green", "yellow", "purple"}
-	animals := []string{"dog", "cat", "bird", "fish", "rabbit"}
+	adjectives := []string{"brave", "clever", "swift", "mighty", "gentle", "wild", "fierce", "loyal", "playful", "wise", "mysterious", "ancient", "radiant", "shadowy", "vibrant", "ethereal", "noble", "savage", "serene", "thunderous"}
+	colors := []string{"red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "black", "white", "gray", "cyan", "magenta", "lime", "teal", "indigo", "violet", "gold", "silver", "bronze"}
+	animals := []string{"dog", "cat", "bird", "fish", "rabbit", "lion", "tiger", "elephant", "giraffe", "zebra", "monkey", "bear", "wolf", "fox", "deer", "horse", "cow", "pig", "sheep", "goat", "chicken", "duck", "goose", "turkey", "eagle", "hawk", "owl", "parrot", "penguin", "dolphin", "shark", "whale", "octopus", "spider", "bee", "butterfly", "ant", "fly", "snake", "lizard", "frog", "turtle", "crocodile", "dinosaur", "dragon", "unicorn", "phoenix"}
+	
+	adjective := adjectives[time.Now().UnixNano()%int64(len(adjectives))]
 	color := colors[time.Now().UnixNano()%int64(len(colors))]
 	animal := animals[time.Now().UnixNano()%int64(len(animals))]
-	return color + "_" + animal
+	return adjective + "_" + color + "_" + animal
 }
 
 func main() {
