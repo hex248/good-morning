@@ -424,7 +424,8 @@ func handleCreateNotice(c *gin.Context) {
 		PhotoURL        *string `json:"photoUrl"`
 		SongURL         *string `json:"songUrl"`
 		SongExplanation *string `json:"songExplanation"`
-		Color           string  `json:"color" binding:"required"`
+		ForegroundColor string  `json:"foregroundColor" binding:"required"`
+		BackgroundColor string  `json:"backgroundColor" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
@@ -456,7 +457,8 @@ func handleCreateNotice(c *gin.Context) {
 		PhotoURL:        requestBody.PhotoURL,
 		SongURL:         requestBody.SongURL,
 		SongExplanation: requestBody.SongExplanation,
-		Color:           requestBody.Color,
+		ForegroundColor: requestBody.ForegroundColor,
+		BackgroundColor: requestBody.BackgroundColor,
 		Reactions:       []string{},
 		SentAt:          time.Now(),
 		ResetAt:         resetAt,

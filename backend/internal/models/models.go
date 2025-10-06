@@ -28,7 +28,8 @@ type Notice struct {
 	PhotoURL        *string    `json:"photoUrl"`
 	SongURL         *string    `json:"songUrl"`
 	SongExplanation *string    `json:"songExplanation"`
-	Color           string     `json:"color"`
+	ForegroundColor string     `json:"foregroundColor"`
+	BackgroundColor string     `json:"backgroundColor"`
 	Reactions       []string   `gorm:"type:text[]" json:"reactions"`
 	SentAt          time.Time  `json:"sentAt"`
 	EditedAt        *time.Time `json:"editedAt"`
