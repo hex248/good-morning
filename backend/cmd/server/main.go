@@ -329,6 +329,30 @@ func handleUserPair(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"message": "users paired successfully"})
 }
 
+func handleUserGet(c *gin.Context) {
+    userID, exists := c.Get("user_id")
+    if !exists {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+        return
+    }
+
+    var user models.User
+    if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+        return
+    }
+
+    var partner *models.User
+    if user.PairedUserID != nil {
+        partner = &models.User{}
+        if err := database.DB.Where("id = ?", *user.PairedUserID).First(partner).Error; err != nil {
+            partner = nil
+        }
+    }
+
+    c.JSON(http.StatusOK, gin.H{"user": user, "partner": partner})
+}
+
 func main() {
     database.InitDB()
     database.DB.AutoMigrate(&models.User{}, &models.Notice{})
@@ -353,6 +377,7 @@ func main() {
     {
         protected.GET("/me", handleGetMe)
         protected.POST("/user/pair", handleUserPair)
+        protected.GET("/user/get", handleUserGet)
     }
 
     log.Fatal(r.Run(":24804"))
