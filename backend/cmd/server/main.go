@@ -267,6 +267,68 @@ func handleGetMe(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
+func handleUserPair(c *gin.Context) {
+    userID, exists := c.Get("user_id")
+    if !exists {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+        return
+    }
+
+    var requestBody struct {
+        PairCode string `json:"pairCode" binding:"required"`
+    }
+
+    if err := c.ShouldBindJSON(&requestBody); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+        return
+    }
+
+    // find partner with the unique code
+    var partner models.User
+    if err := database.DB.Where("unique_code = ?", requestBody.PairCode).First(&partner).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "partner not found"})
+        return
+    }
+
+    if partner.ID == userID {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "cannot pair with yourself"})
+        return
+    }
+
+    var currentUser models.User
+    if err := database.DB.Where("id = ?", userID).First(&currentUser).Error; err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+        return
+    }
+
+    // if already paired
+    if currentUser.PairedUserID != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "already paired"})
+        return
+    }
+
+    if partner.PairedUserID != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "partner already paired with someone else"}) // ouch :(
+        return
+    }
+
+    // pair users and save
+    currentUser.PairedUserID = &partner.ID
+    partner.PairedUserID = &currentUser.ID
+
+    if err := database.DB.Save(&currentUser).Error; err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to pair users"})
+        return
+    }
+
+    if err := database.DB.Save(&partner).Error; err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to pair users"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "users paired successfully"})
+}
+
 func main() {
     database.InitDB()
     database.DB.AutoMigrate(&models.User{}, &models.Notice{})
@@ -290,6 +352,7 @@ func main() {
     protected.Use(authMiddleware())
     {
         protected.GET("/me", handleGetMe)
+        protected.POST("/user/pair", handleUserPair)
     }
 
     log.Fatal(r.Run(":24804"))
