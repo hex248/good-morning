@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Avatar from "@/components/Avatar";
 import {
     loginWithGoogle,
     checkAuth,
@@ -12,7 +13,6 @@ import {
     getUserData,
     type User,
 } from "@/lib/api";
-import Image from "next/image";
 
 export default function Home() {
     const [authenticated, setAuthenticated] = useState(false);
@@ -54,35 +54,35 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-8 p-4">
+            {authenticated && user && (
+                <Avatar src={user?.picture} alt="avatar" size={128} />
+            )}
             <h1 className="text-5xl font-semibold">good morning!</h1>
             {authenticated && user ? (
                 <div className="flex flex-col items-center gap-4">
                     {partner ? (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Your Partner</CardTitle>
-                            </CardHeader>
+                        <Card className="min-w-xs">
                             <CardContent className="flex flex-col items-center gap-4">
-                                <Image
-                                    src={
-                                        partner.picture || "/default-avatar.png"
-                                    }
-                                    alt="partner avatar"
-                                    className="w-24 h-24 rounded-full border-2 border-border"
-                                    width={96}
-                                    height={96}
-                                />
-                                <p className="text-2xl font-semibold">
-                                    {partner.username}
+                                <p className="text-xl font-semibold">
+                                    Your Partner
                                 </p>
+                                <div className="flex flex-row items-center gap-4">
+                                    <Avatar
+                                        src={partner.picture}
+                                        alt="partner avatar"
+                                    />
+                                    <p className="text-2xl font-semibold">
+                                        {partner.username}
+                                    </p>
+                                </div>
                             </CardContent>
                         </Card>
                     ) : (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Pair with Partner</CardTitle>
-                            </CardHeader>
+                        <Card className="min-w-xs">
                             <CardContent className="flex flex-col items-center gap-4">
+                                <p className="text-xl font-semibold">
+                                    Pair with Partner
+                                </p>
                                 <p>Your Unique Code: {user.uniqueCode}</p>
                                 <Input
                                     type="text"
@@ -104,7 +104,7 @@ export default function Home() {
             ) : (
                 <Button
                     onClick={loginWithGoogle}
-                    className="text-2xl py-5 px-12"
+                    variant="outline"
                 >
                     Login with Google
                 </Button>

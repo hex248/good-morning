@@ -6,8 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Avatar from "@/components/Avatar";
 import { checkAuth, getUserData, editUsername, type User } from "@/lib/api";
-import Image from "next/image";
 
 export default function MePage() {
     const [authenticated, setAuthenticated] = useState(false);
@@ -66,20 +66,10 @@ export default function MePage() {
     return (
         <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-4 p-4">
             <h1 className="text-4xl font-semibold">Me</h1>
-            <Card className="w-full max-w-md">
-                <CardHeader>
-                    <CardTitle>Your Profile</CardTitle>
-                </CardHeader>
+            <Card className="min-w-sm">
                 <CardContent className="flex flex-col items-center gap-4">
-                    {user.picture && (
-                        <Image
-                            src={user.picture || "/default-avatar.png"}
-                            alt="avatar"
-                            className="w-24 h-24 rounded-full border-2 border-border"
-                            width={96}
-                            height={96}
-                        />
-                    )}
+                    <p className="text-xl font-semibold">Your Profile</p>
+                    <Avatar src={user.picture} alt="avatar" />
                     {editMode ? (
                         <>
                             <Input
@@ -113,22 +103,16 @@ export default function MePage() {
                             </Button>
                         </>
                     )}
-                    <p>Email: {user.email}</p>
+                    <p>
+                        <strong>Email:</strong> {user.email}
+                    </p>
                 </CardContent>
             </Card>
             {partner && (
-                <Card className="w-full max-w-md">
-                    <CardHeader>
-                        <CardTitle>Your Partner</CardTitle>
-                    </CardHeader>
+                <Card className="min-w-sm">
                     <CardContent className="flex flex-col items-center gap-4">
-                        <Image
-                            src={partner.picture || "/default-avatar.png"}
-                            alt="partner avatar"
-                            className="w-24 h-24 rounded-full border-2 border-border"
-                            width={96}
-                            height={96}
-                        />
+                        <p className="text-xl font-semibold">Your Partner</p>
+                        <Avatar src={partner.picture} alt="partner avatar" />
                         <p className="text-2xl font-semibold">
                             {partner.username}
                         </p>
@@ -136,7 +120,7 @@ export default function MePage() {
                 </Card>
             )}
             {message && <p>{message}</p>}
-            <div className="flex gap-2 justify-center w-full">
+            <div className="flex gap-2 justify-center min-w-sm">
                 <Link href="/" className="cursor-pointer">
                     <Button variant="outline">Back to Home</Button>
                 </Link>
