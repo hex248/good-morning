@@ -22,6 +22,7 @@ export default function Home() {
     const [user, setUser] = useState<User | null>(null);
     const [partner, setPartner] = useState<User | null>(null);
     const [notice, setNotice] = useState<any | null>(null);
+    const [hasNotice, setHasNotice] = useState(false);
     const [pairCode, setPairCode] = useState("");
     const [pairMessage, setPairMessage] = useState("");
     const [menuOpen, setMenuOpen] = useState(false);
@@ -36,6 +37,7 @@ export default function Home() {
             if (authData.authenticated && authData.user) {
                 const noticeData = await getNotice();
                 setNotice(noticeData.notice);
+                setHasNotice(noticeData.notice !== null);
             }
             setLoading(false);
         };
@@ -63,7 +65,7 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans relative">
-            {authenticated && user && notice ? (
+            {authenticated && user && hasNotice ? (
                 <div
                     className="fixed inset-0 z-10"
                     style={{
@@ -127,6 +129,9 @@ export default function Home() {
                                                 {partner.username}
                                             </p>
                                         </div>
+                                        <p className="text-center">
+                                            Your partner hasn't sent a notice yet. Check back later!
+                                        </p>
                                         <Link
                                             href="/create-notice"
                                             className="cursor-pointer"
