@@ -353,6 +353,37 @@ func handleUserGet(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"user": user, "partner": partner})
 }
 
+func handleUserEdit(c *gin.Context) {
+    userID, exists := c.Get("user_id")
+    if !exists {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+        return
+    }
+
+    var requestBody struct {
+        Username string `json:"username" binding:"required"`
+    }
+
+    if err := c.ShouldBindJSON(&requestBody); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+        return
+    }
+
+    var user models.User
+    if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+        return
+    }
+
+    user.Username = requestBody.Username
+    if err := database.DB.Save(&user).Error; err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "username updated successfully"})
+}
+
 func main() {
     database.InitDB()
     database.DB.AutoMigrate(&models.User{}, &models.Notice{})
@@ -378,6 +409,7 @@ func main() {
         protected.GET("/me", handleGetMe)
         protected.POST("/user/pair", handleUserPair)
         protected.GET("/user/get", handleUserGet)
+        protected.PUT("/user/edit", handleUserEdit)
     }
 
     log.Fatal(r.Run(":24804"))
