@@ -2,6 +2,6 @@
 
 set -e
 
-cd next-frontend
+cd frontend
 npm run build
 cd ..
