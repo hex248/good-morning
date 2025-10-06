@@ -3,16 +3,44 @@
     <meta name="description" content="Good Morning PWA" />
 </svelte:head>
 
-<script>
-    // biome-ignore lint/correctness/noUnusedVariables: <this is used :(>
-    function loginWithGoogle() {
-        window.location.href = 'http://localhost:24804/auth/google';
+<script lang="ts">
+    import { onMount } from 'svelte';
+    import { PUBLIC_BACKEND_URL } from '$env/static/public';
+
+    interface User {
+        id: string;
+        username: string;
+        email: string;
+        uniqueCode: string;
     }
+
+    interface PageData {
+        user: User | null;
+        authenticated: boolean;
+    }
+
+    export let data: PageData;
+
+    let authenticated: boolean = data.authenticated;
+    let user: User | null = data.user;
+
+    function loginWithGoogle() {
+        window.location.href = `${PUBLIC_BACKEND_URL}/auth/google`;
+    }
+
+    onMount(() => {
+        console.log('authenticated:', authenticated, 'user:', user);
+    });
 </script>
 
 <body>
     <h1>good morning!</h1>
-    <button on:click={loginWithGoogle}>Login with Google</button>
+    {#if authenticated && user}
+        <p>welcome, {user.username}!</p>
+        <p>your unique code: {user.uniqueCode}</p>
+    {:else}
+        <button on:click={loginWithGoogle}>Login with Google</button>
+    {/if}
 </body>
 
 <style>
@@ -35,6 +63,7 @@
         padding-left: env(safe-area-inset-left);
 
         font-size: 50px;
+        text-align: center;
     }
 
     h1 {
