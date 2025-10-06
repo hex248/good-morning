@@ -109,7 +109,8 @@ func handleGoogleCallback(c *gin.Context) {
     }
     c.SetCookie("jwt", jwtToken, 86400, "/", "", false, true) // 24 hours, HTTP-only, secure if HTTPS
 
-    c.JSON(http.StatusOK, gin.H{"message": "Authentication successful"})
+    // redirect to frontend
+    c.Redirect(http.StatusTemporaryRedirect, "http://localhost:5173/")
 }
 
 type TokenResponse struct {
