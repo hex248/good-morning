@@ -208,14 +208,19 @@ export default function Home() {
                             transition: "opacity 0.2s",
                         }}
                     >
-                        <Link href="/create-notice" className="cursor-pointer">
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start"
+                        {!alreadySent && (
+                            <Link
+                                href="/create-notice"
+                                className="cursor-pointer"
                             >
-                                Create Notice
-                            </Button>
-                        </Link>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start"
+                                >
+                                    Create Notice
+                                </Button>
+                            </Link>
+                        )}
                         <Link href="/me" className="cursor-pointer">
                             <Button
                                 variant="outline"
