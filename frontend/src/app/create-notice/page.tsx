@@ -318,7 +318,7 @@ export default function CreateNoticePage() {
                             >
                                 <div className="p-4 h-full flex flex-col justify-center items-center text-center">
                                     {formData.message && (
-                                        <p className="mb-4 text-[175%]">
+                                        <p className="text-[175%] whitespace-pre-wrap">
                                             {formData.message}
                                         </p>
                                     )}
