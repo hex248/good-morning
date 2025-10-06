@@ -91,6 +91,7 @@ func handleGoogleCallback(c *gin.Context) {
                 Timezone:             "UTC",
                 UniqueCode:           generateUniqueCode(),
                 NotificationsEnabled: false,
+                Picture:              &googleUser.Picture,
             }
             if err := database.DB.Create(&user).Error; err != nil {
                 c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})

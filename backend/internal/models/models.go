@@ -14,6 +14,7 @@ type User struct {
     UniqueCode           string    `json:"uniqueCode"`
     NotificationsEnabled bool      `json:"notificationsEnabled"`
     PairedUserID         *string   `json:"pairedUserId"`
+    Picture              *string   `json:"picture"`
     CreatedAt            time.Time `json:"createdAt"`
     UpdatedAt            time.Time `json:"updatedAt"`
 }
