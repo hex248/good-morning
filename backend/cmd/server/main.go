@@ -184,7 +184,7 @@ func generateUserID() string {
 
 func generateUniqueCode() string {
     adjectives := []string{"brave", "clever", "swift", "mighty", "gentle", "wild", "fierce", "loyal", "playful", "wise", "mysterious", "ancient", "radiant", "shadowy", "vibrant", "ethereal", "noble", "savage", "serene", "thunderous"}
-    colors := []string{"red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "black", "white", "gray", "cyan", "magenta", "lime", "teal", "indigo", "violet", "gold", "silver", "bronze"}
+    colors := []string{"red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "black", "white", "grey", "cyan", "magenta", "lime", "teal", "indigo", "violet", "gold", "silver", "bronze"}
     animals := []string{"dog", "cat", "bird", "fish", "rabbit", "lion", "tiger", "elephant", "giraffe", "zebra", "monkey", "bear", "wolf", "fox", "deer", "horse", "cow", "pig", "sheep", "goat", "chicken", "duck", "goose", "turkey", "eagle", "hawk", "owl", "parrot", "penguin", "dolphin", "shark", "whale", "octopus", "spider", "bee", "butterfly", "ant", "fly", "snake", "lizard", "frog", "turtle", "crocodile", "dinosaur", "dragon", "unicorn", "phoenix"}
 
     adjective := adjectives[time.Now().UnixNano()%int64(len(adjectives))]
