@@ -472,6 +472,33 @@ func handleCreateNotice(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "notice created successfully"})
 }
 
+func handleGetNotice(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	var user models.User
+	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	// find today's notice for the user
+	var notice models.Notice
+	if err := database.DB.Where("recipient_id = ? AND reset_at > ?", user.ID, time.Now()).First(&notice).Error; err != nil {
+		if err.Error() == "record not found" {
+			c.JSON(http.StatusOK, gin.H{"notice": nil})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get notice"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"notice": notice})
+}
+
 func main() {
 	database.InitDB()
 	database.DB.AutoMigrate(&models.User{}, &models.Notice{})
@@ -508,6 +535,7 @@ func main() {
 		protected.GET("/user/get", handleUserGet)
 		protected.PUT("/user/edit", handleUserEdit)
 		protected.POST("/notices/create", handleCreateNotice)
+		protected.GET("/notices/get", handleGetNotice)
 	}
 
 	log.Fatal(r.Run(":24804"))
