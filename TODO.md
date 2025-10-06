@@ -3,7 +3,7 @@
 -   [x] set up sveltekit frontend project structure with typescript and pwa configuration
 -   [x] set up go backend project with gin framework, gorm orm, and postgresql database
 -   [x] implement user and notice database schemas with gorm migrations
--   [ ] implement google oauth authentication for login and user creation (high priority)
+-   [x] implement google oauth authentication for login and user creation (high priority)
 -   [ ] implement user pairing with unique codes and partner linking (medium priority)
 -   [ ] implement api endpoints for notices (create, edit, get, getall, react) (high priority)
 -   [ ] implement api endpoints for user management (get, edit, pair) (medium priority)
