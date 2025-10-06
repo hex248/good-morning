@@ -1,15 +1,17 @@
 import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
-interface User {
+export interface User {
     id: string;
     username: string;
     email: string;
     uniqueCode: string;
     picture?: string;
+    partner?: User;
 }
 
-interface PageData {
+export interface PageData {
     user: User | null;
+    partner: User | null;
     authenticated: boolean;
 }
 
@@ -22,6 +24,7 @@ export async function load({ fetch }: { fetch: typeof globalThis.fetch }): Promi
             const data = await response.json();
             return {
                 user: data.user,
+                partner: data.partner,
                 authenticated: true
             };
         }
@@ -30,6 +33,7 @@ export async function load({ fetch }: { fetch: typeof globalThis.fetch }): Promi
     }
     return {
         user: null,
+        partner: null,
         authenticated: false
     };
 }

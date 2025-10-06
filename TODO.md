@@ -4,9 +4,9 @@
 -   [x] set up go backend project with gin framework, gorm orm, and postgresql database
 -   [x] implement user and notice database schemas with gorm migrations
 -   [x] implement google oauth authentication for login and user creation (high priority)
--   [ ] implement user pairing with unique codes and partner linking (medium priority)
+-   [x] implement user pairing with unique codes and partner linking (medium priority)
 -   [ ] implement api endpoints for notices (create, edit, get, getall, react) (high priority)
--   [ ] implement api endpoints for user management (get, edit, pair) (medium priority)
+-   [x] implement api endpoints for user management (get, edit, pair) (medium priority)
 -   [ ] implement web push api for notifications (subscribe, send) (medium priority)
 -   [ ] implement spotify api integration for song search and links (medium priority)
 -   [ ] build main ui pages: notice display, create/edit form, me page, history (high priority)

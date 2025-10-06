@@ -265,7 +265,15 @@ func handleGetMe(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"user": user})
+	var partner *models.User
+	if user.PairedUserID != nil {
+		partner = &models.User{}
+		if err := database.DB.Where("id = ?", *user.PairedUserID).First(partner).Error; err != nil {
+			partner = nil
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user, "partner": partner})
 }
 
 func handleUserPair(c *gin.Context) {
