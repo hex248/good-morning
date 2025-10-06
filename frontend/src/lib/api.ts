@@ -134,6 +134,20 @@ export async function createNotice(noticeData: {
     }
 }
 
+export async function getNotice(): Promise<{ notice: any | null }> {
+    try {
+        const response = await api.get("/notices/get");
+        if (response.status === 200) {
+            return { notice: response.data.notice };
+        }
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error) && error.response?.status !== 401) {
+            console.error("failed to get notice:", error);
+        }
+    }
+    return { notice: null };
+}
+
 export function loginWithGoogle() {
     window.location.href = `${API_BASE_URL}/auth/google`;
 }
