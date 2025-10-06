@@ -388,7 +388,7 @@ func handleUserEdit(c *gin.Context) {
 
 	var user models.User
 	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
@@ -399,6 +399,71 @@ func handleUserEdit(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "username updated successfully"})
+}
+
+func handleCreateNotice(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	var user models.User
+	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if user.PairedUserID == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no paired user"})
+		return
+	}
+
+	var requestBody struct {
+		Message         *string `json:"message"`
+		PhotoURL        *string `json:"photoUrl"`
+		SongURL         *string `json:"songUrl"`
+		SongExplanation *string `json:"songExplanation"`
+		Color           string  `json:"color" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+
+	var partner models.User
+	if err := database.DB.Where("id = ?", *user.PairedUserID).First(&partner).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get partner"})
+		return
+	}
+
+	// resetAt is midnight in partner's timezone
+	now := time.Now()
+	partnerTime := now.In(partner.Timezone)
+	midnight := time.Date(partnerTime.Year(), partnerTime.Month(), partnerTime.Day()+1, 0, 0, 0, 0, partnerTime.Location())
+	resetAt := midnight
+
+	notice := models.Notice{
+		ID:              fmt.Sprintf("notice_%d", time.Now().UnixNano()),
+		SenderID:        user.ID,
+		RecipientID:     partner.ID,
+		Message:         requestBody.Message,
+		PhotoURL:        requestBody.PhotoURL,
+		SongURL:         requestBody.SongURL,
+		SongExplanation: requestBody.SongExplanation,
+		Color:           requestBody.Color,
+		Reactions:       []string{},
+		SentAt:          time.Now(),
+		ResetAt:         resetAt,
+	}
+
+	if err := database.DB.Create(&notice).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create notice"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "notice created successfully"})
 }
 
 func main() {
@@ -436,6 +501,7 @@ func main() {
 		protected.POST("/user/pair", handleUserPair)
 		protected.GET("/user/get", handleUserGet)
 		protected.PUT("/user/edit", handleUserEdit)
+		protected.POST("/notices/create", handleCreateNotice)
 	}
 
 	log.Fatal(r.Run(":24804"))
