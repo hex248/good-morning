@@ -52,28 +52,10 @@ export default function Home() {
     }
 
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-12 p-4">
+        <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-8 p-4">
             <h1 className="text-5xl font-semibold">good morning!</h1>
             {authenticated && user ? (
-                <div className="flex flex-col items-center gap-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Your Profile</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-col items-center gap-4">
-                            {user.picture && (
-                                <img
-                                    src={user.picture}
-                                    alt="avatar"
-                                    className="w-24 h-24 rounded-full border-2 border-border"
-                                />
-                            )}
-                            <p>Username: {user.username}</p>
-                            <Link href="/me" className="cursor-pointer">
-                                <Button variant="outline">Me</Button>
-                            </Link>
-                        </CardContent>
-                    </Card>
+                <div className="flex flex-col items-center gap-4">
                     {partner ? (
                         <Card>
                             <CardHeader>
@@ -83,11 +65,11 @@ export default function Home() {
                                 <img
                                     src={partner.picture}
                                     alt="partner avatar"
-                                    className="w-16 h-16 rounded-full border-2 border-border"
+                                    className="w-24 h-24 rounded-full border-2 border-border"
                                 />
-                                <p>Username: {partner.username}</p>
-                                <p>Unique Code: {partner.uniqueCode}</p>
-                                {/* Unpair button can be added later */}
+                                <p className="text-2xl font-semibold">
+                                    {partner.username}
+                                </p>
                             </CardContent>
                         </Card>
                     ) : (
@@ -110,6 +92,9 @@ export default function Home() {
                             </CardContent>
                         </Card>
                     )}
+                    <Link href="/me" className="cursor-pointer">
+                        <Button variant="outline">Me</Button>
+                    </Link>
                 </div>
             ) : (
                 <Button

@@ -63,7 +63,7 @@ export default function MePage() {
     }
 
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-8 p-4">
+        <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-4 p-4">
             <h1 className="text-4xl font-semibold">Me</h1>
             <Card className="w-full max-w-md">
                 <CardHeader>
@@ -99,7 +99,9 @@ export default function MePage() {
                         </>
                     ) : (
                         <>
-                            <p>Username: {user.username}</p>
+                            <p className="text-2xl font-semibold">
+                                {user.username}
+                            </p>
                             <Button
                                 onClick={() => setEditMode(true)}
                                 variant="outline"
@@ -109,7 +111,6 @@ export default function MePage() {
                         </>
                     )}
                     <p>Email: {user.email}</p>
-                    <p>Unique Code: {user.uniqueCode}</p>
                 </CardContent>
             </Card>
             {partner && (
@@ -121,27 +122,23 @@ export default function MePage() {
                         <img
                             src={partner.picture}
                             alt="partner avatar"
-                            className="w-16 h-16 rounded-full border-2 border-border"
+                            className="w-24 h-24 rounded-full border-2 border-border"
                         />
-                        <p>Username: {partner.username}</p>
-                        <p>Unique Code: {partner.uniqueCode}</p>
+                        <p className="text-2xl font-semibold">
+                            {partner.username}
+                        </p>
                     </CardContent>
                 </Card>
             )}
-            <Card className="w-full max-w-md">
-                <CardHeader>
-                    <CardTitle>Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-4">
-                    <Button variant="outline" onClick={handleLogout}>
-                        Log Out
-                    </Button>
-                </CardContent>
-            </Card>
             {message && <p>{message}</p>}
-            <Link href="/" className="cursor-pointer">
-                <Button variant="outline">Back to Home</Button>
-            </Link>
+            <div className="flex gap-2 justify-center w-full">
+                <Link href="/" className="cursor-pointer">
+                    <Button variant="outline">Back to Home</Button>
+                </Link>
+                <Button variant="outline" onClick={handleLogout}>
+                    Log Out
+                </Button>
+            </div>
         </div>
     );
 }
