@@ -43,13 +43,25 @@ export default function Home() {
                 setHasNotice(noticeData.notice !== null);
 
                 const lastSent = localStorage.getItem("lastSentDate");
-
                 setAlreadySent(lastSent === today);
             }
             setLoading(false);
         };
         initAuth();
     }, []);
+
+    useEffect(() => {
+        if (authenticated && user && hasNotice && notice) {
+            document.body.style.backgroundColor =
+                notice.backgroundColor || "#ffffff";
+        } else {
+            document.body.style.backgroundColor = "";
+        }
+
+        return () => {
+            document.body.style.backgroundColor = "";
+        };
+    }, [authenticated, user, hasNotice, notice]);
 
     const handlePair = async () => {
         const result = await pairUser(pairCode);
@@ -78,7 +90,6 @@ export default function Home() {
                     style={{
                         backgroundColor: notice.backgroundColor || "#f0f0f0",
                         color: notice.foregroundColor || "#000000",
-                        marginTop: "calc(-1 * env(safe-area-inset-top))",
                     }}
                 >
                     <div className="p-4 h-full flex flex-col justify-center items-center text-center gap-4">
