@@ -117,15 +117,15 @@ export default function Home() {
             className="min-h-screen bg-background text-foreground font-sans relative"
             style={{
                 overflow: hasNotice ? "hidden" : "auto",
-                backgroundColor: notice.backgroundColor || "inherit",
+                backgroundColor: notice?.backgroundColor || "inherit",
             }}
         >
             {authenticated && user && hasNotice ? (
                 <div
                     className="fixed inset-0 z-10 no-select"
                     style={{
-                        backgroundColor: notice.backgroundColor || "#f0f0f0",
-                        color: notice.foregroundColor || "#000000",
+                        backgroundColor: notice?.backgroundColor || "#f0f0f0",
+                        color: notice?.foregroundColor || "#000000",
                     }}
                 >
                     <div className="p-4 h-full flex flex-col justify-center items-center text-center gap-4">
