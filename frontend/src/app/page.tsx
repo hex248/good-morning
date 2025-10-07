@@ -132,135 +132,123 @@ export default function Home() {
                     </div>
                 </div>
             ) : (
-                <>
-                    <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-8 p-4">
-                        {authenticated && user && (
-                            <Avatar
-                                src={user?.picture}
-                                alt="avatar"
-                                size={128}
-                            />
-                        )}
-                        <h1 className="text-5xl font-semibold">
-                            good morning!
-                        </h1>
-                        {authenticated && user ? (
-                            <div className="flex flex-col items-center gap-4">
-                                {partner ? (
-                                    <Card className="min-w-xs">
-                                        <CardContent className="flex flex-col items-center gap-4">
-                                            <p className="text-xl font-semibold">
-                                                Your Partner
-                                            </p>
-                                            <div className="flex flex-row items-center gap-4">
-                                                <Avatar
-                                                    src={partner.picture}
-                                                    alt="partner avatar"
-                                                />
-                                                <p className="text-2xl font-semibold">
-                                                    {partner.username}
-                                                </p>
-                                            </div>
-                                            <p className="text-center">
-                                                Your partner hasn't sent a
-                                                notice yet. Check back later!
-                                            </p>
-                                            {!alreadySent && (
-                                                <Link
-                                                    href="/create-notice"
-                                                    className="cursor-pointer"
-                                                >
-                                                    <Button>
-                                                        Create Notice
-                                                    </Button>
-                                                </Link>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                ) : (
-                                    <Card className="min-w-xs">
-                                        <CardContent className="flex flex-col items-center gap-4">
-                                            <p className="text-xl font-semibold">
-                                                Pair with Partner
-                                            </p>
-                                            <p>
-                                                Your Unique Code:{" "}
-                                                {user.uniqueCode}
-                                            </p>
-                                            <Input
-                                                type="text"
-                                                value={pairCode}
-                                                onChange={(e) =>
-                                                    setPairCode(e.target.value)
-                                                }
-                                                placeholder="Enter partner's unique code"
-                                            />
-                                            <Button onClick={handlePair}>
-                                                Pair
-                                            </Button>
-                                            {pairMessage && (
-                                                <p>{pairMessage}</p>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                )}
-                                <Link href="/me" className="cursor-pointer">
-                                    <Button variant="outline">Me</Button>
-                                </Link>
-                            </div>
-                        ) : (
-                            <Button onClick={loginWithGoogle} variant="outline">
-                                Login with Google
-                            </Button>
-                        )}
-                    </div>
+                <div className="min-h-screen bg-background text-foreground font-sans flex flex-col justify-center items-center gap-8 p-4">
                     {authenticated && user && (
-                        <div className="fixed bottom-4 right-4 z-50">
-                            <Button
-                                onClick={() => setMenuOpen(!menuOpen)}
-                                className="w-[50px] h-[50px] rounded-full bg-primary text-primary-foreground shadow-lg"
-                            >
-                                <Plus
-                                    style={{
-                                        scale: menuOpen ? 1.75 : 1.25,
-                                        rotate: menuOpen ? "45deg" : "0deg",
-                                        transition: "all 0.2s",
-                                    }}
-                                />
-                            </Button>
-                            <div
-                                className="absolute flex flex-col bottom-[60px] right-0 bg-popover border border-border rounded-lg shadow-lg p-2 gap-2"
-                                style={{
-                                    opacity: menuOpen ? 1 : 0,
-                                    pointerEvents: menuOpen ? "auto" : "none",
-                                    transition: "opacity 0.2s",
-                                }}
-                            >
-                                {!alreadySent && (
-                                    <Link
-                                        href="/create-notice"
-                                        className="cursor-pointer"
-                                    >
-                                        <Button
-                                            variant="outline"
-                                            className="w-full justify-start"
-                                        >
-                                            Create Notice
-                                        </Button>
-                                    </Link>
-                                )}
-                                <Link href="/me" className="cursor-pointer">
-                                    <Button
-                                        variant="outline"
-                                        className="w-full justify-start"
-                                    >
-                                        Me
-                                    </Button>
-                                </Link>
-                            </div>
-                        </div>
+                        <Avatar src={user?.picture} alt="avatar" size={128} />
                     )}
-                </>
+                    <h1 className="text-5xl font-semibold">good morning!</h1>
+                    {authenticated && user ? (
+                        <div className="flex flex-col items-center gap-4">
+                            {partner ? (
+                                <Card className="min-w-xs">
+                                    <CardContent className="flex flex-col items-center gap-4">
+                                        <p className="text-xl font-semibold">
+                                            Your Partner
+                                        </p>
+                                        <div className="flex flex-row items-center gap-4">
+                                            <Avatar
+                                                src={partner.picture}
+                                                alt="partner avatar"
+                                            />
+                                            <p className="text-2xl font-semibold">
+                                                {partner.username}
+                                            </p>
+                                        </div>
+                                        <p className="text-center">
+                                            Your partner hasn't sent a notice
+                                            yet. Check back later!
+                                        </p>
+                                        {!alreadySent && (
+                                            <Link
+                                                href="/create-notice"
+                                                className="cursor-pointer"
+                                            >
+                                                <Button>Create Notice</Button>
+                                            </Link>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <Card className="min-w-xs">
+                                    <CardContent className="flex flex-col items-center gap-4">
+                                        <p className="text-xl font-semibold">
+                                            Pair with Partner
+                                        </p>
+                                        <p>
+                                            Your Unique Code: {user.uniqueCode}
+                                        </p>
+                                        <Input
+                                            type="text"
+                                            value={pairCode}
+                                            onChange={(e) =>
+                                                setPairCode(e.target.value)
+                                            }
+                                            placeholder="Enter partner's unique code"
+                                        />
+                                        <Button onClick={handlePair}>
+                                            Pair
+                                        </Button>
+                                        {pairMessage && <p>{pairMessage}</p>}
+                                    </CardContent>
+                                </Card>
+                            )}
+                            <Link href="/me" className="cursor-pointer">
+                                <Button variant="outline">Me</Button>
+                            </Link>
+                        </div>
+                    ) : (
+                        <Button onClick={loginWithGoogle} variant="outline">
+                            Login with Google
+                        </Button>
+                    )}
+                </div>
+            )}
+
+            {authenticated && user && (
+                <div className="fixed bottom-4 right-4 z-50">
+                    <Button
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        className="w-[50px] h-[50px] rounded-full bg-primary text-primary-foreground shadow-lg"
+                    >
+                        <Plus
+                            style={{
+                                scale: menuOpen ? 1.75 : 1.25,
+                                rotate: menuOpen ? "45deg" : "0deg",
+                                transition: "all 0.2s",
+                            }}
+                        />
+                    </Button>
+                    <div
+                        className="absolute flex flex-col bottom-[60px] right-0 bg-popover border border-border rounded-lg shadow-lg p-2 gap-2"
+                        style={{
+                            opacity: menuOpen ? 1 : 0,
+                            pointerEvents: menuOpen ? "auto" : "none",
+                            transition: "opacity 0.2s",
+                        }}
+                    >
+                        {!alreadySent && (
+                            <Link
+                                href="/create-notice"
+                                className="cursor-pointer"
+                            >
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start"
+                                >
+                                    Create Notice
+                                </Button>
+                            </Link>
+                        )}
+                        <Link href="/me" className="cursor-pointer">
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start"
+                            >
+                                Me
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
             )}
         </div>
     );
