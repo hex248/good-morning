@@ -117,7 +117,7 @@ export default function Home() {
             className="min-h-screen bg-background text-foreground font-sans relative"
             style={{
                 overflow: hasNotice ? "hidden" : "auto",
-                backgroundColor: notice.backgroundColor,
+                backgroundColor: notice.backgroundColor || "inherit",
             }}
         >
             {authenticated && user && hasNotice ? (
