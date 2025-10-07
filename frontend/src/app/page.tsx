@@ -28,9 +28,14 @@ export default function Home() {
     const [pairMessage, setPairMessage] = useState("");
     const [menuOpen, setMenuOpen] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
     useEffect(() => {
         const today = new Date().toISOString().split("T")[0];
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isStandalone = (window.navigator as any).standalone === true;
+        setShowInstallPrompt(isIOS && !isStandalone);
 
         const initAuth = async () => {
             const authData = await checkAuth();
@@ -77,7 +82,32 @@ export default function Home() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                Loading...
+                loading...
+            </div>
+        );
+    }
+
+    if (showInstallPrompt) {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                <Card className="w-full max-w-md">
+                    <CardContent className="space-y-4">
+                        <h2 className="text-2xl font-semibold">
+                            add to home screen
+                        </h2>
+                        <p>
+                            to use this app on ios, add it to your home screen.
+                        </p>
+                        <p>
+                            <strong>instructions:</strong>
+                        </p>
+                        <ol className="list-decimal list-inside space-y-2">
+                            <li>tap the share button in safari.</li>
+                            <li>scroll down and tap "Add to Home Screen".</li>
+                            <li>tap "Add" in the top right.</li>
+                        </ol>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
