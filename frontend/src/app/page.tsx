@@ -78,6 +78,7 @@ export default function Home() {
                     style={{
                         backgroundColor: notice.backgroundColor || "#f0f0f0",
                         color: notice.foregroundColor || "#000000",
+                        marginTop: "calc(-1 * env(safe-area-inset-top))",
                     }}
                 >
                     <div className="p-4 h-full flex flex-col justify-center items-center text-center gap-4">
