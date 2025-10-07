@@ -89,7 +89,7 @@ export default function Home() {
         >
             {authenticated && user && hasNotice ? (
                 <div
-                    className="fixed inset-0 z-10"
+                    className="fixed inset-0 z-10 no-select"
                     style={{
                         backgroundColor: notice.backgroundColor || "#f0f0f0",
                         color: notice.foregroundColor || "#000000",
