@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Good Morning PWA",
-    description: "A lightweight PWA for couples to share daily notices",
+    title: "good morning!",
+    description: "share a daily notice with your partner",
 };
 
 export default function RootLayout({
@@ -24,6 +24,11 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
+            <head>
+                <link rel="manifest" href="/manifest.json" />
+                <meta name="theme-color" content="#000000" />
+                <link rel="apple-touch-icon" href="/icon-192x192.png" />
+            </head>
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
