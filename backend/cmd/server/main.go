@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -9,11 +11,18 @@ import (
 	"good_morning_backend/internal/models"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -23,6 +32,8 @@ const (
 	GoogleAuthURL     = "https://accounts.google.com/o/oauth2/auth"
 	GoogleTokenURL    = "https://oauth2.googleapis.com/token"
 	GoogleUserInfoURL = "https://www.googleapis.com/oauth2/v2/userinfo"
+	MaxFileSize       = 5 * 1024 * 1024 // 5mb
+	AllowedTypes      = "image/jpeg,image/png,image/webp"
 )
 
 type GoogleUser struct {
@@ -42,6 +53,56 @@ func redirectToFrontend(c *gin.Context, path string) {
 		frontendURL = "http://localhost:3000"
 	}
 	c.Redirect(http.StatusTemporaryRedirect, frontendURL+path)
+}
+
+func initR2Client() (*s3.Client, error) {
+	accessKey := os.Getenv("R2_ACCESS_KEY_ID")
+	secretKey := os.Getenv("R2_SECRET_ACCESS_KEY")
+	endpoint := os.Getenv("R2_ENDPOINT")
+	region := os.Getenv("R2_REGION")
+
+	if accessKey == "" || secretKey == "" || endpoint == "" || region == "" {
+		return nil, fmt.Errorf("R2 credentials not set")
+	}
+
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
+		config.WithRegion(region),
+		config.WithEndpointResolver(aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+			return aws.Endpoint{URL: endpoint}, nil
+		})),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return s3.NewFromConfig(cfg), nil
+}
+
+func validateFile(file *multipart.FileHeader) error {
+	if file.Size > MaxFileSize {
+		return fmt.Errorf("file size exceeds 5mb limit")
+	}
+
+	contentType := file.Header.Get("Content-Type")
+	if !strings.Contains(AllowedTypes, contentType) {
+		return fmt.Errorf("invalid file type: %s", contentType)
+	}
+
+	ext := filepath.Ext(file.Filename)
+	if !strings.Contains(".jpg.jpeg.png.webp", strings.ToLower(ext)) {
+		return fmt.Errorf("invalid file extension: %s", ext)
+	}
+
+	return nil
+}
+
+func generateFileName(originalName string) string {
+	ext := filepath.Ext(originalName)
+	timestamp := time.Now().UnixNano()
+	randomBytes := make([]byte, 8)
+	rand.Read(randomBytes)
+	return fmt.Sprintf("%d_%x%s", timestamp, randomBytes, ext)
 }
 
 func generateState() string {
@@ -499,6 +560,69 @@ func handleGetNotice(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"notice": notice})
 }
 
+func handleUpload(c *gin.Context) {
+	r2Client, err := initR2Client()
+	if err != nil {
+		log.Fatalf("Failed to initialize R2 client: %v", err)
+	}
+
+	_, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	file, err := c.FormFile("image")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no image file provided"})
+		return
+	}
+
+	if err := validateFile(file); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// open file
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to open file"})
+		return
+	}
+	defer src.Close()
+
+	// read file content
+	buf := make([]byte, file.Size)
+	if _, err := io.ReadFull(src, buf); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
+		return
+	}
+
+	fileName := generateFileName(file.Filename)
+	bucketName := os.Getenv("R2_BUCKET_NAME")
+
+	// upload
+	_, err = r2Client.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:      aws.String(bucketName),
+		Key:         aws.String(fileName),
+		Body:        bytes.NewReader(buf),
+		ContentType: aws.String(file.Header.Get("Content-Type")),
+		ACL:         "public-read",
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to upload file"})
+		return
+	}
+
+	publicURL := os.Getenv("R2_PUBLIC_URL")
+	if publicURL == "" {
+		publicURL = os.Getenv("R2_ENDPOINT")
+	}
+	imageURL := fmt.Sprintf("%s/%s", publicURL, fileName)
+
+	c.JSON(http.StatusOK, gin.H{"url": imageURL})
+}
+
 func main() {
 	database.InitDB()
 	database.DB.AutoMigrate(&models.User{}, &models.Notice{})
@@ -536,6 +660,7 @@ func main() {
 		protected.PUT("/user/edit", handleUserEdit)
 		protected.POST("/notices/create", handleCreateNotice)
 		protected.GET("/notices/get", handleGetNotice)
+		protected.POST("/upload", handleUpload)
 	}
 
 	log.Fatal(r.Run(":24804"))
