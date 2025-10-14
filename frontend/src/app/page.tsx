@@ -13,6 +13,7 @@ import {
     getUserData,
     getNotice,
     type User,
+    type Notice,
 } from "@/lib/api";
 import Image from "next/image";
 import { Plus } from "lucide-react";
@@ -21,7 +22,7 @@ export default function Home() {
     const [authenticated, setAuthenticated] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const [partner, setPartner] = useState<User | null>(null);
-    const [notice, setNotice] = useState<any | null>(null);
+    const [notice, setNotice] = useState<Notice | null>(null);
     const [hasNotice, setHasNotice] = useState(false);
     const [alreadySent, setAlreadySent] = useState(false);
     const [pairCode, setPairCode] = useState("");
@@ -34,6 +35,7 @@ export default function Home() {
         const today = new Date().toISOString().split("T")[0];
 
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        // biome-ignore lint/suspicious/noExplicitAny: <>
         const isStandalone = (window.navigator as any).standalone === true;
         setShowInstallPrompt(isIOS && !isStandalone);
 
@@ -120,7 +122,7 @@ export default function Home() {
                 backgroundColor: notice?.backgroundColor || "inherit",
             }}
         >
-            {authenticated && user && hasNotice ? (
+            {authenticated && user && hasNotice && notice ? (
                 <div
                     className="fixed inset-0 z-10 no-select"
                     style={{
@@ -145,17 +147,56 @@ export default function Home() {
                             />
                         )}
                         {notice.songUrl && (
-                            <div className="text-[160%]">
-                                <a
-                                    href={notice.songUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-500 underline"
-                                >
-                                    {notice.songUrl}
-                                </a>
-                                {notice.songExplanation && (
-                                    <p>{notice.songExplanation}</p>
+                            <div className="w-full">
+                                {notice.songTitle && notice.songArtist ? (
+                                    <a
+                                        href={notice.songUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-4 border border-4 p-4 rounded-lg"
+                                        style={{
+                                            borderWidth: "4px",
+                                            borderColor:
+                                                notice?.foregroundColor ||
+                                                "#000000",
+                                            color:
+                                                notice?.foregroundColor ||
+                                                "#000000",
+                                        }}
+                                    >
+                                        {notice.songAlbumCover && (
+                                            <Image
+                                                src={notice.songAlbumCover}
+                                                alt="Album Cover"
+                                                width={96}
+                                                height={96}
+                                                className="rounded"
+                                                unoptimized
+                                            />
+                                        )}
+                                        <div className="flex flex-col items-start">
+                                            <span className="text-4xl font-bold">
+                                                {notice.songTitle}
+                                            </span>
+                                            <span className="text-2xl font-medium">
+                                                {notice.songArtist}
+                                            </span>
+                                            {notice.songExplanation && (
+                                                <span className="text-lg">
+                                                    {notice.songExplanation}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </a>
+                                ) : (
+                                    <a
+                                        href={notice.songUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-500 underline"
+                                    >
+                                        {notice.songUrl}
+                                    </a>
                                 )}
                             </div>
                         )}
