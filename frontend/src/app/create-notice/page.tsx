@@ -40,7 +40,9 @@ export default function CreateNoticePage() {
     const [preview, setPreview] = useState(false);
     const [alreadySent, setAlreadySent] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(
+        null
+    );
     const [formData, setFormData] = useState({
         message: "",
         photoUrl: "",
@@ -449,10 +451,12 @@ export default function CreateNoticePage() {
                                             {formData.message}
                                         </p>
                                     )}
-                                    {(uploadedImageUrl || formData.photoUrl) && (
+                                    {(uploadedImageUrl ||
+                                        formData.photoUrl) && (
                                         <Image
                                             src={
-                                                uploadedImageUrl || formData.photoUrl
+                                                uploadedImageUrl ||
+                                                formData.photoUrl
                                             }
                                             alt="notice photo"
                                             className="w-[100%] h-[50%] object-cover rounded-[12px]"
@@ -462,20 +466,45 @@ export default function CreateNoticePage() {
                                         />
                                     )}
                                     {formData.songUrl && (
-                                        <div className="text-[160%]">
-                                            <a
-                                                href={formData.songUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-500 underline"
+                                        <div className="w-full">
+                                            <div
+                                                className="flex items-center gap-4 border border-4 p-4 rounded-lg"
+                                                style={{
+                                                    borderWidth: "4px",
+                                                    borderColor:
+                                                        formData.foregroundColor ||
+                                                        "#000000",
+                                                    color:
+                                                        formData?.foregroundColor ||
+                                                        "#000000",
+                                                }}
                                             >
-                                                {formData.songUrl}
-                                            </a>
-                                            {formData.songExplanation && (
-                                                <p>
-                                                    {formData.songExplanation}
-                                                </p>
-                                            )}
+                                                <Image
+                                                    src={"/default-avatar.png"}
+                                                    alt="Album Cover"
+                                                    width={96}
+                                                    height={96}
+                                                    className="rounded"
+                                                    unoptimized
+                                                />
+                                                <div className="flex flex-col items-start">
+                                                    <span className="text-4xl break-normal font-bold">
+                                                        track title
+                                                    </span>
+                                                    <span className="text-2xl break-normal font-medium">
+                                                        artist name
+                                                    </span>
+                                                    {formData.songExplanation && (
+                                                        <span className="text-lg text-left whitespace-pre-wrap break-normal">
+                                                            “
+                                                            {
+                                                                formData.songExplanation
+                                                            }
+                                                            ”
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

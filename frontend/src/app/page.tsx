@@ -175,15 +175,15 @@ export default function Home() {
                                             />
                                         )}
                                         <div className="flex flex-col items-start">
-                                            <span className="text-4xl font-bold">
+                                            <span className="text-4xl break-normal font-bold">
                                                 {notice.songTitle}
                                             </span>
-                                            <span className="text-2xl font-medium">
+                                            <span className="text-2xl break-normal font-medium">
                                                 {notice.songArtist}
                                             </span>
                                             {notice.songExplanation && (
-                                                <span className="text-lg">
-                                                    {notice.songExplanation}
+                                                <span className="text-lg text-left whitespace-pre-wrap break-normal">
+                                                    “{notice.songExplanation}”
                                                 </span>
                                             )}
                                         </div>
