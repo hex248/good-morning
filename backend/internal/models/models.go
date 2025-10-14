@@ -27,6 +27,9 @@ type Notice struct {
 	Message         *string    `json:"message"`
 	PhotoURL        *string    `json:"photoUrl"`
 	SongURL         *string    `json:"songUrl"`
+	SongTitle       *string    `json:"songTitle"`
+	SongArtist      *string    `json:"songArtist"`
+	SongAlbumCover  *string    `json:"songAlbumCover"`
 	SongExplanation *string    `json:"songExplanation"`
 	ForegroundColor string     `json:"foregroundColor"`
 	BackgroundColor string     `json:"backgroundColor"`
