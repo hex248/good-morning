@@ -17,6 +17,25 @@ export interface User {
     partner?: User;
 }
 
+export interface Notice {
+    id: string;
+    senderId: string;
+    recipientId: string;
+    message?: string;
+    photoUrl?: string;
+    songUrl?: string;
+    songTitle?: string;
+    songArtist?: string;
+    songAlbumCover?: string;
+    songExplanation?: string;
+    foregroundColor: string;
+    backgroundColor: string;
+    reactions: string[];
+    sentAt: string;
+    editedAt?: string;
+    resetAt: string;
+}
+
 export interface AuthResponse {
     user: User | null;
     partner: User | null;
@@ -134,7 +153,7 @@ export async function createNotice(noticeData: {
     }
 }
 
-export async function getNotice(): Promise<{ notice: any | null }> {
+export async function getNotice(): Promise<{ notice: Notice | null }> {
     try {
         const response = await api.get("/notices/get");
         if (response.status === 200) {
