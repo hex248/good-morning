@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"good_morning_backend/internal/database"
 	"good_morning_backend/internal/models"
+	"good_morning_backend/internal/spotify"
 	"io"
 	"log"
 	"mime/multipart"
@@ -494,6 +495,23 @@ func handleCreateNotice(c *gin.Context) {
 		return
 	}
 
+	var songTitle, songArtist, songAlbumCover *string
+	if requestBody.SongURL != nil && *requestBody.SongURL != "" {
+		trackID, err := spotify.ParseTrackID(*requestBody.SongURL)
+		if err == nil {
+			trackDetails, err := spotify.FetchTrackDetails(trackID)
+			if err == nil {
+				songTitle = &trackDetails.Title
+				songArtist = &trackDetails.Artist
+				songAlbumCover = &trackDetails.AlbumCover
+			} else {
+				log.Printf("failed to fetch Spotify track details: %v", err)
+			}
+		} else {
+			log.Printf("failed to parse Spotify URL: %v", err)
+		}
+	}
+
 	var partner models.User
 	if err := database.DB.Where("id = ?", *user.PairedUserID).First(&partner).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get partner"})
@@ -517,6 +535,9 @@ func handleCreateNotice(c *gin.Context) {
 		Message:         requestBody.Message,
 		PhotoURL:        requestBody.PhotoURL,
 		SongURL:         requestBody.SongURL,
+		SongTitle:       songTitle,
+		SongArtist:      songArtist,
+		SongAlbumCover:  songAlbumCover,
 		SongExplanation: requestBody.SongExplanation,
 		ForegroundColor: requestBody.ForegroundColor,
 		BackgroundColor: requestBody.BackgroundColor,
@@ -563,7 +584,7 @@ func handleGetNotice(c *gin.Context) {
 func handleUpload(c *gin.Context) {
 	r2Client, err := initR2Client()
 	if err != nil {
-		log.Fatalf("Failed to initialize R2 client: %v", err)
+		log.Fatalf("failed to initialize R2 client: %v", err)
 	}
 
 	_, exists := c.Get("user_id")
