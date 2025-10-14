@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,8 @@ export default function CreateNoticePage() {
     const [message, setMessage] = useState("");
     const [preview, setPreview] = useState(false);
     const [alreadySent, setAlreadySent] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         message: "",
         photoUrl: "",
@@ -49,9 +51,9 @@ export default function CreateNoticePage() {
     });
     const router = useRouter();
 
-    useEffect(() => {
-        const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
 
+    useEffect(() => {
         const initAuth = async () => {
             const authData = await checkAuth();
             if (!authData.authenticated) {
@@ -69,25 +71,75 @@ export default function CreateNoticePage() {
             setLoading(false);
         };
         initAuth();
-    }, [router]);
+    }, [router, today]);
 
     const handleInputChange = (field: string, value: string) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            setUploadedImageUrl(URL.createObjectURL(file));
+            setFormData((prev) => ({ ...prev, photoUrl: "" })); // clear photoUrl
+        } else {
+            setSelectedFile(null);
+            setUploadedImageUrl(null);
+        }
+    };
+
+    const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const url = e.target.value;
+        setFormData((prev) => ({ ...prev, photoUrl: url }));
+        if (url) {
+            setSelectedFile(null);
+            setUploadedImageUrl(null);
+        }
+    };
+
     const handleSubmit = async () => {
-        if (!formData.foregroundColor) {
-            setMessage("Please select a foreground color");
+        if (!formData.foregroundColor || !formData.backgroundColor) {
+            setMessage("Please select foreground and background colors");
             return;
         }
-        if (!formData.backgroundColor) {
-            setMessage("Please select a background color");
-            return;
+
+        let photoUrl = formData.photoUrl;
+
+        if (selectedFile) {
+            const formDataUpload = new FormData();
+            formDataUpload.append("image", selectedFile);
+
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/upload`,
+                    {
+                        method: "POST",
+                        body: formDataUpload,
+                        credentials: "include",
+                    }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    photoUrl = data.url;
+                } else {
+                    const errorData = await response.json();
+                    setMessage(
+                        `Upload failed: ${errorData.error || "Unknown error"}`
+                    );
+                    return;
+                }
+            } catch (error) {
+                setMessage("Failed to upload image. Please try again.");
+                console.error(error);
+                return;
+            }
         }
-        const result = await createNotice(formData);
+
+        const result = await createNotice({ ...formData, photoUrl });
         setMessage(result.message);
         if (result.success) {
-            const today = new Date().toISOString().split("T")[0];
             localStorage.setItem("lastSentDate", today);
             setAlreadySent(true);
             router.push("/");
@@ -316,18 +368,27 @@ export default function CreateNoticePage() {
                         </div>
                         <div>
                             <Label className="block text-sm font-medium mb-2">
-                                Photo URL
+                                Photo
                             </Label>
                             <Input
-                                value={formData.photoUrl}
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        "photoUrl",
-                                        e.target.value
-                                    )
-                                }
-                                placeholder="https://example.com/image.jpg"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="mb-2"
                             />
+                            {!selectedFile && (
+                                <>
+                                    <Label className="block text-sm font-medium mb-2">
+                                        or enter a photo URL:
+                                    </Label>
+                                    <Input
+                                        value={formData.photoUrl}
+                                        onChange={handleUrlChange}
+                                        placeholder="https://example.com/image.jpg"
+                                        disabled={!!selectedFile}
+                                    />
+                                </>
+                            )}
                         </div>
                         <div>
                             <Label className="block text-sm font-medium mb-2">
@@ -388,11 +449,13 @@ export default function CreateNoticePage() {
                                             {formData.message}
                                         </p>
                                     )}
-                                    {formData.photoUrl && (
+                                    {(uploadedImageUrl || formData.photoUrl) && (
                                         <Image
-                                            src={formData.photoUrl}
+                                            src={
+                                                uploadedImageUrl || formData.photoUrl
+                                            }
                                             alt="notice photo"
-                                            className="w-[100%] h-[40%] object-cover rounded-[12px]"
+                                            className="w-[100%] h-[50%] object-cover rounded-[12px]"
                                             width={0}
                                             height={0}
                                             unoptimized

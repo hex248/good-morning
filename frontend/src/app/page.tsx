@@ -138,7 +138,7 @@ export default function Home() {
                             <Image
                                 src={notice.photoUrl}
                                 alt="notice photo"
-                                className="w-[100%] h-[40%] object-cover rounded-[12px]"
+                                className="w-[100%] h-[50%] object-cover rounded-[12px]"
                                 width={0}
                                 height={0}
                                 unoptimized
