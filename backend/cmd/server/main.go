@@ -644,6 +644,42 @@ func handleUpload(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"url": imageURL})
 }
 
+func handlePushSubscribe(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	var requestBody struct {
+		Endpoint string `json:"endpoint" binding:"required"`
+		P256dh   string `json:"p256dh" binding:"required"`
+		Auth     string `json:"auth" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+
+	database.DB.Where("user_id = ?", userID).Delete(&models.PushSubscription{})
+
+	subscription := models.PushSubscription{
+		ID:       fmt.Sprintf("sub_%d", time.Now().UnixNano()),
+		UserID:   userID.(string),
+		Endpoint: requestBody.Endpoint,
+		P256dh:   requestBody.P256dh,
+		Auth:     requestBody.Auth,
+	}
+
+	if err := database.DB.Create(&subscription).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save subscription"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "subscription saved successfully"})
+}
+
 func main() {
 	database.InitDB()
 	database.DB.AutoMigrate(&models.User{}, &models.Notice{}, &models.PushSubscription{})
@@ -683,6 +719,7 @@ func main() {
 		protected.POST("/notices/create", handleCreateNotice)
 		protected.GET("/notices/get", handleGetNotice)
 		protected.POST("/upload", handleUpload)
+		protected.POST("/push/subscribe", handlePushSubscribe)
 	}
 
 	log.Fatal(r.Run(":24804"))
