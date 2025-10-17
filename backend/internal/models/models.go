@@ -39,8 +39,14 @@ type Notice struct {
 	ResetAt         time.Time  `json:"resetAt"`
 }
 
-func (Notice) TableName() string {
-	return "Notice"
+type PushSubscription struct {
+	ID        string    `gorm:"primaryKey" json:"id"`
+	UserID    string    `gorm:"not null" json:"userId"`
+	Endpoint  string    `gorm:"not null" json:"endpoint"`
+	P256dh    string    `gorm:"not null" json:"p256dh"`
+	Auth      string    `gorm:"not null" json:"auth"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
@@ -56,4 +62,12 @@ func (u *User) BeforeUpdate(tx *gorm.DB) error {
 
 func (User) TableName() string {
 	return "User"
+}
+
+func (Notice) TableName() string {
+	return "Notice"
+}
+
+func (PushSubscription) TableName() string {
+	return "PushSubscription"
 }

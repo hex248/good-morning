@@ -646,7 +646,8 @@ func handleUpload(c *gin.Context) {
 
 func main() {
 	database.InitDB()
-	database.DB.AutoMigrate(&models.User{}, &models.Notice{})
+	database.DB.AutoMigrate(&models.User{}, &models.Notice{}, &models.PushSubscription{})
+
 	r := gin.Default()
 
 	// CORS middleware
