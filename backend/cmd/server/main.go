@@ -680,6 +680,22 @@ func handlePushSubscribe(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "subscription saved successfully"})
 }
 
+func handlePushUnsubscribe(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	result := database.DB.Where("user_id = ?", userID).Delete(&models.PushSubscription{})
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to unsubscribe"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "unsubscribed successfully"})
+}
+
 func main() {
 	database.InitDB()
 	database.DB.AutoMigrate(&models.User{}, &models.Notice{}, &models.PushSubscription{})
@@ -720,6 +736,7 @@ func main() {
 		protected.GET("/notices/get", handleGetNotice)
 		protected.POST("/upload", handleUpload)
 		protected.POST("/push/subscribe", handlePushSubscribe)
+		protected.DELETE("/push/unsubscribe", handlePushUnsubscribe)
 	}
 
 	log.Fatal(r.Run(":24804"))
