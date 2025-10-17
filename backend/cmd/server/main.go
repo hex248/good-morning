@@ -682,6 +682,17 @@ func handlePushSubscribe(c *gin.Context) {
 		return
 	}
 
+	var user models.User
+	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to find user"})
+		return
+	}
+	user.NotificationsEnabled = true
+	if err := database.DB.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "subscription saved successfully"})
 }
 
@@ -695,6 +706,17 @@ func handlePushUnsubscribe(c *gin.Context) {
 	result := database.DB.Where("user_id = ?", userID).Delete(&models.PushSubscription{})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to unsubscribe"})
+		return
+	}
+
+	var user models.User
+	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to find user"})
+		return
+	}
+	user.NotificationsEnabled = false
+	if err := database.DB.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
 		return
 	}
 
