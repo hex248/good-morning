@@ -37,6 +37,11 @@ const (
 	AllowedTypes      = "image/jpeg,image/png,image/webp"
 )
 
+var (
+	vapidPublicKey  string
+	vapidPrivateKey string
+)
+
 type GoogleUser struct {
 	ID            string `json:"id"`
 	Email         string `json:"email"`
@@ -699,6 +704,12 @@ func handlePushUnsubscribe(c *gin.Context) {
 func main() {
 	database.InitDB()
 	database.DB.AutoMigrate(&models.User{}, &models.Notice{}, &models.PushSubscription{})
+
+	vapidPublicKey = os.Getenv("VAPID_PUBLIC_KEY")
+	vapidPrivateKey = os.Getenv("VAPID_PRIVATE_KEY")
+	if vapidPublicKey == "" || vapidPrivateKey == "" {
+		log.Fatal("VAPID keys not set in .env")
+	}
 
 	r := gin.Default()
 
