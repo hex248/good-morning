@@ -13,6 +13,7 @@ export interface User {
     username: string;
     email: string;
     uniqueCode: string;
+    notificationsEnabled: boolean;
     picture?: string;
     partner?: User;
 }
@@ -165,6 +166,121 @@ export async function getNotice(): Promise<{ notice: Notice | null }> {
         }
     }
     return { notice: null };
+}
+
+export async function getVapidPublicKey(): Promise<string | null> {
+    try {
+        const response = await api.get("/push/vapid-public-key");
+        if (response.status === 200) {
+            return response.data.vapidPublicKey;
+        }
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error) && error.response?.status !== 401) {
+            console.error("failed to get VAPID public key:", error);
+        }
+    }
+    return null;
+}
+
+export async function subscribeToPush(): Promise<{
+    success: boolean;
+    message: string;
+}> {
+    try {
+        if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+            return { success: false, message: "Push not supported" };
+        }
+
+        const registration = await navigator.serviceWorker.ready;
+        const vapidPublicKey = await getVapidPublicKey();
+        if (!vapidPublicKey) {
+            return { success: false, message: "failed to get VAPID key" };
+        }
+
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        });
+
+        const p256dhKey = subscription.getKey("p256dh");
+        const authKey = subscription.getKey("auth");
+
+        if (!p256dhKey || !authKey) {
+            return {
+                success: false,
+                message: "failed to get subscription keys",
+            };
+        }
+
+        const response = await api.post("/push/subscribe", {
+            endpoint: subscription.endpoint,
+            p256dh: arrayBufferToBase64(p256dhKey),
+            auth: arrayBufferToBase64(authKey),
+        });
+
+        if (response.status === 200) {
+            return { success: true, message: "subscribed successfully" };
+        } else {
+            return {
+                success: false,
+                message: response.data.error || "failed to subscribe",
+            };
+        }
+    } catch (error: unknown) {
+        console.error("failed to subscribe to push:", error);
+        return { success: false, message: "failed to subscribe" };
+    }
+}
+
+export async function unsubscribeFromPush(): Promise<{
+    success: boolean;
+    message: string;
+}> {
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+            await subscription.unsubscribe();
+        }
+
+        const response = await api.delete("/push/unsubscribe");
+        if (response.status === 200) {
+            return { success: true, message: "unsubscribed successfully" };
+        } else {
+            return {
+                success: false,
+                message: response.data.error || "failed to unsubscribe",
+            };
+        }
+    } catch (error: unknown) {
+        console.error("failed to unsubscribe from push:", error);
+        return { success: false, message: "failed to unsubscribe" };
+    }
+}
+
+function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+
+    const rawData = window.atob(base64);
+    const buffer = new ArrayBuffer(rawData.length);
+    const outputArray = new Uint8Array(buffer);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return buffer;
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
 }
 
 export function loginWithGoogle() {
