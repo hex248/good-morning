@@ -20,7 +20,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SherClockHolmes/webpush-go"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -557,33 +556,6 @@ func handleCreateNotice(c *gin.Context) {
 		return
 	}
 
-	// if enabled, send push notification to partner
-	var partnerSub models.PushSubscription
-	if err := database.DB.Where("user_id = ?", partner.ID).First(&partnerSub).Error; err == nil && partner.NotificationsEnabled {
-		payload := map[string]interface{}{
-			"title": "good morning!",
-			"body":  "❤️ " + user.Username + " sent you a notice ❤️",
-			"icon":  "/icon-192x192.png",
-		}
-
-		payloadBytes, _ := json.Marshal(payload)
-		sub := webpush.Subscription{
-			Endpoint: partnerSub.Endpoint,
-			Keys: webpush.Keys{
-				P256dh: partnerSub.P256dh,
-				Auth:   partnerSub.Auth,
-			},
-		}
-		options := &webpush.Options{
-			VAPIDPrivateKey: vapidPrivateKey,
-		}
-		resp, err := webpush.SendNotification(payloadBytes, &sub, options)
-		if err != nil {
-			log.Printf("failed to send push notification: %v", err)
-		}
-		_ = resp
-	}
-
 	c.JSON(http.StatusOK, gin.H{"message": "notice created successfully"})
 }
 
@@ -751,10 +723,6 @@ func handlePushUnsubscribe(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "unsubscribed successfully"})
 }
 
-func handleGetVapidPublicKey(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"vapidPublicKey": vapidPublicKey})
-}
-
 func main() {
 	database.InitDB()
 	database.DB.AutoMigrate(&models.User{}, &models.Notice{}, &models.PushSubscription{})
@@ -800,7 +768,6 @@ func main() {
 		protected.POST("/notices/create", handleCreateNotice)
 		protected.GET("/notices/get", handleGetNotice)
 		protected.POST("/upload", handleUpload)
-		protected.GET("/push/vapid-public-key", handleGetVapidPublicKey)
 		protected.POST("/push/subscribe", handlePushSubscribe)
 		protected.DELETE("/push/unsubscribe", handlePushUnsubscribe)
 	}
