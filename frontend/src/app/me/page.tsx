@@ -7,7 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import Avatar from "@/components/Avatar";
-import { checkAuth, getUserData, editUsername, type User } from "@/lib/api";
+import {
+    checkAuth,
+    getUserData,
+    editUsername,
+    subscribeToPush,
+    unsubscribeFromPush,
+    type User,
+} from "@/lib/api";
 
 export default function MePage() {
     const [authenticated, setAuthenticated] = useState(false);
@@ -17,6 +24,7 @@ export default function MePage() {
     const [editMode, setEditMode] = useState(false);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
+    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -29,6 +37,9 @@ export default function MePage() {
             setAuthenticated(true);
             setUser(authData.user);
             setPartner(authData.partner);
+            setNotificationsEnabled(
+                authData.user?.notificationsEnabled || false
+            );
             setLoading(false);
         };
         initAuth();
@@ -37,7 +48,6 @@ export default function MePage() {
     const handleEditUsername = async () => {
         if (newUsername.trim()) {
             const result = await editUsername(newUsername);
-            setMessage(result.message);
             if (result.success) {
                 const userData = await getUserData();
                 setUser(userData.user);
@@ -49,6 +59,22 @@ export default function MePage() {
 
     const handleLogout = () => {
         window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/logout`;
+    };
+
+    const handleToggleNotifications = async () => {
+        if (notificationsEnabled) {
+            const result = await unsubscribeFromPush();
+            if (result.success) {
+                setNotificationsEnabled(false);
+                setUser(user ? { ...user, notificationsEnabled: false } : null);
+            }
+        } else {
+            const result = await subscribeToPush();
+            if (result.success) {
+                setNotificationsEnabled(true);
+                setUser(user ? { ...user, notificationsEnabled: true } : null);
+            }
+        }
     };
 
     if (loading) {
@@ -106,6 +132,15 @@ export default function MePage() {
                     <p>
                         <strong>Email:</strong> {user.email}
                     </p>
+                    <div className="flex items-center gap-2">
+                        <span>Notifications:</span>
+                        <Button
+                            onClick={handleToggleNotifications}
+                            variant={"outline"}
+                        >
+                            {notificationsEnabled ? "Enabled" : "Disabled"}
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
             {partner && (
