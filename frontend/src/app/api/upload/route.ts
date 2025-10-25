@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "node:crypto";
 import { jwtVerify } from "jose";
+import sharp from "sharp";
 
 export const runtime = "nodejs";
 
@@ -127,28 +128,39 @@ export async function POST(req: Request) {
             forcePathStyle: true,
         });
 
-        const timestamp = Date.now();
-        const randomHex = crypto.randomBytes(8).toString("hex");
-        const key = `${timestamp}_${randomHex}${ext}`;
-
         // buffer from file
         const arrayBuffer = await f.arrayBuffer();
         const body = Buffer.from(arrayBuffer);
 
-        const putContentType =
+        // convert to jpeg
+        let uploadBody: Buffer = body;
+        let uploadExt: string = ext;
+        let uploadContentType: string =
             type ||
             (ext === ".heic"
                 ? "image/heic"
                 : ext === ".heif"
                 ? "image/heif"
                 : "application/octet-stream");
+        try {
+            const jpeg = await sharp(body).jpeg({ quality: 85 }).toBuffer();
+            uploadBody = jpeg;
+            uploadExt = ".jpg";
+            uploadContentType = "image/jpeg";
+        } catch {
+            // original will be used
+        }
+
+        const timestamp = Date.now();
+        const randomHex = crypto.randomBytes(8).toString("hex");
+        const key = `${timestamp}_${randomHex}${uploadExt}`;
 
         await s3.send(
             new PutObjectCommand({
                 Bucket: bucket,
                 Key: key,
-                Body: body,
-                ContentType: putContentType,
+                Body: uploadBody,
+                ContentType: uploadContentType,
                 ACL: "public-read",
             })
         );
