@@ -182,10 +182,26 @@ func handleGoogleCallback(c *gin.Context) {
 	// generate JWT and set in cookie
 	jwtToken, err := generateJWT(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
 		return
 	}
-	c.SetCookie("jwt", jwtToken, 86400, "/", "", false, true) // 24 hours, HTTP-only, secure if HTTPS
+
+	frontendURL := os.Getenv("FRONTEND_URL")
+	secure := false
+	if strings.HasPrefix(frontendURL, "https") {
+		secure = true
+	}
+
+	cookie := &http.Cookie{
+		Name:     "jwt",
+		Value:    jwtToken,
+		Path:     "/",
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: http.SameSiteNoneMode,
+	}
+	http.SetCookie(c.Writer, cookie)
 
 	// redirect to frontend
 	redirectToFrontend(c, "/")
@@ -755,8 +771,23 @@ func main() {
 	r.GET("/auth/google", handleGoogleLogin)
 	r.GET("/auth/google/callback", handleGoogleCallback)
 	r.GET("/logout", func(c *gin.Context) {
-		// clear JWT cookie
-		c.SetCookie("jwt", "", -1, "/", "", false, true)
+		// clear JWT cookie - mirror SameSite and Secure settings when setting it
+		frontendURL := os.Getenv("FRONTEND_URL")
+		secure := false
+		if strings.HasPrefix(frontendURL, "https") {
+			secure = true
+		}
+
+		cookie := &http.Cookie{
+			Name:     "jwt",
+			Value:    "",
+			Path:     "/",
+			Expires:  time.Unix(0, 0),
+			HttpOnly: true,
+			Secure:   secure,
+			SameSite: http.SameSiteNoneMode,
+		}
+		http.SetCookie(c.Writer, cookie)
 		redirectToFrontend(c, "/")
 	})
 
