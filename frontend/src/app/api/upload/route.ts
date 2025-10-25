@@ -61,9 +61,23 @@ export async function POST(req: Request) {
         const size = f.size;
         const type = f.type;
         const originalName = f.name as string | undefined;
-        const maxSize = 5 * 1024 * 1024; // 5mb
-        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-        const allowedExts = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            // iOS HEIC/HEIF support
+            "image/heic",
+            "image/heif",
+        ];
+        const allowedExts = new Set([
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp",
+            ".heic",
+            ".heif",
+        ]);
         if (size > maxSize) {
             return NextResponse.json(
                 { error: "file size exceeds 5mb limit" },
@@ -121,12 +135,20 @@ export async function POST(req: Request) {
         const arrayBuffer = await f.arrayBuffer();
         const body = Buffer.from(arrayBuffer);
 
+        const putContentType =
+            type ||
+            (ext === ".heic"
+                ? "image/heic"
+                : ext === ".heif"
+                ? "image/heif"
+                : "application/octet-stream");
+
         await s3.send(
             new PutObjectCommand({
                 Bucket: bucket,
                 Key: key,
                 Body: body,
-                ContentType: type,
+                ContentType: putContentType,
                 ACL: "public-read",
             })
         );
