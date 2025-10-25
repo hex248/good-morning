@@ -1,51 +1,12 @@
 import { NextResponse } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "node:crypto";
-import { jwtVerify } from "jose";
 import sharp from "sharp";
 
 export const runtime = "nodejs";
 
-function getCookieValue(
-    cookieHeader: string,
-    name: string
-): string | undefined {
-    const parts = cookieHeader.split(/;\s*/);
-    for (const part of parts) {
-        const [k, ...rest] = part.split("=");
-        if (k === name) return rest.join("=");
-    }
-    return undefined;
-}
-
 export async function POST(req: Request) {
     try {
-        // jwt
-        const cookieHeader = req.headers.get("cookie") || "";
-        const jwt = getCookieValue(cookieHeader, "jwt");
-        if (!jwt) {
-            return NextResponse.json(
-                { error: "unauthorized" },
-                { status: 401 }
-            );
-        }
-        const jwtSecret = process.env.JWT_SECRET;
-        if (!jwtSecret) {
-            return NextResponse.json(
-                { error: "server misconfigured (JWT_SECRET)" },
-                { status: 500 }
-            );
-        }
-        try {
-            const secret = new TextEncoder().encode(jwtSecret);
-            await jwtVerify(jwt, secret);
-        } catch {
-            return NextResponse.json(
-                { error: "unauthorized" },
-                { status: 401 }
-            );
-        }
-
         // parse form data
         const form = await req.formData();
         const file = form.get("image");

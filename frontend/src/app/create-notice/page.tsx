@@ -122,10 +122,24 @@ export default function CreateNoticePage() {
                     const data = await response.json();
                     photoUrl = data.url;
                 } else {
-                    const errorData = await response.json();
-                    setMessage(
-                        `Upload failed: ${errorData.error || "Unknown error"}`
-                    );
+                    const ct = response.headers.get("content-type") || "";
+                    if (ct.includes("application/json")) {
+                        const errorData = await response
+                            .json()
+                            .catch(() => ({ error: "unknown error" }));
+                        setMessage(
+                            `Upload failed: ${
+                                errorData.error || "unknown error"
+                            }`
+                        );
+                    } else {
+                        const text = await response.text();
+                        setMessage(
+                            `Upload failed: ${
+                                text || response.statusText || "unknown error"
+                            }`
+                        );
+                    }
                     return;
                 }
             } catch (error) {
