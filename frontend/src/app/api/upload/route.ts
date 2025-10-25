@@ -93,7 +93,8 @@ export async function POST(req: Request) {
         const arrayBuffer = await f.arrayBuffer();
         const body = Buffer.from(arrayBuffer);
 
-        // convert to jpeg
+        // optionally convert to jpeg
+        const skipJpegConversion = true;
         let uploadBody: Buffer = body;
         let uploadExt: string = ext;
         let uploadContentType: string =
@@ -103,13 +104,15 @@ export async function POST(req: Request) {
                 : ext === ".heif"
                 ? "image/heif"
                 : "application/octet-stream");
-        try {
-            const jpeg = await sharp(body).jpeg({ quality: 85 }).toBuffer();
-            uploadBody = jpeg;
-            uploadExt = ".jpg";
-            uploadContentType = "image/jpeg";
-        } catch {
-            // original will be used
+        if (!skipJpegConversion) {
+            try {
+                const jpeg = await sharp(body).jpeg({ quality: 85 }).toBuffer();
+                uploadBody = jpeg;
+                uploadExt = ".jpg";
+                uploadContentType = "image/jpeg";
+            } catch {
+                // original will be used anyway
+            }
         }
 
         const timestamp = Date.now();
