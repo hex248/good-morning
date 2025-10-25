@@ -613,6 +613,7 @@ func handleUpload(c *gin.Context) {
 	src, err := file.Open()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to open file"})
+		log.Printf("failed to open file: %v", err)
 		return
 	}
 	defer src.Close()
@@ -621,6 +622,7 @@ func handleUpload(c *gin.Context) {
 	buf := make([]byte, file.Size)
 	if _, err := io.ReadFull(src, buf); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
+		log.Printf("failed to read file: %v", err)
 		return
 	}
 
@@ -637,6 +639,7 @@ func handleUpload(c *gin.Context) {
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to upload file"})
+		log.Printf("failed to upload file: %v", err)
 		return
 	}
 
