@@ -603,6 +603,7 @@ func handleGetNotice(c *gin.Context) {
 }
 
 func handleUpload(c *gin.Context) {
+	log.Printf("handleUpload: method=%s origin=%s content-type=%s", c.Request.Method, c.Request.Header.Get("Origin"), c.Request.Header.Get("Content-Type"))
 	r2Client, err := initR2Client()
 	if err != nil {
 		log.Fatalf("failed to initialize R2 client: %v", err)
@@ -754,17 +755,42 @@ func main() {
 
 	r := gin.Default()
 
-	// CORS middleware
+	// CORS middleware - config for iOS PWA preflight + credentialed requests
 	config := cors.DefaultConfig()
 	frontendURL := os.Getenv("FRONTEND_URL")
 	config.AllowOrigins = []string{frontendURL}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"}
+	config.ExposeHeaders = []string{"Content-Length"}
 	config.AllowCredentials = true
+
+	// allow minor origin variations
+	allowNull := strings.ToLower(os.Getenv("FRONTEND_ALLOW_NULL_ORIGIN")) == "true"
+	config.AllowOriginFunc = func(origin string) bool {
+		if origin == frontendURL {
+			return true
+		}
+		if strings.HasSuffix(frontendURL, "/") && origin == strings.TrimSuffix(frontendURL, "/") {
+			return true
+		}
+		if !strings.HasSuffix(frontendURL, "/") && origin == frontendURL+"/" {
+			return true
+		}
+		if allowNull && origin == "null" {
+			return true
+		}
+		return false
+	}
 	r.Use(cors.New(config))
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "good morning! backend",
 		})
+	})
+
+	r.OPTIONS("/upload", func(c *gin.Context) {
+		c.Status(http.StatusNoContent)
 	})
 
 	// oauth routes
