@@ -133,7 +133,7 @@ export default function CreateNoticePage() {
                     return;
                 }
             } catch (error) {
-                setMessage("Failed to upload image. Please try again.");
+                setMessage(`Failed to upload image: ${error}`);
                 console.error(error);
                 return;
             }
