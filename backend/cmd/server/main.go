@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -12,18 +10,11 @@ import (
 	"good_morning_backend/internal/spotify"
 	"io"
 	"log"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -59,56 +50,6 @@ func redirectToFrontend(c *gin.Context, path string) {
 		frontendURL = "http://localhost:3000"
 	}
 	c.Redirect(http.StatusTemporaryRedirect, frontendURL+path)
-}
-
-func initR2Client() (*s3.Client, error) {
-	accessKey := os.Getenv("R2_ACCESS_KEY_ID")
-	secretKey := os.Getenv("R2_SECRET_ACCESS_KEY")
-	endpoint := os.Getenv("R2_ENDPOINT")
-	region := os.Getenv("R2_REGION")
-
-	if accessKey == "" || secretKey == "" || endpoint == "" || region == "" {
-		return nil, fmt.Errorf("R2 credentials not set")
-	}
-
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
-		config.WithRegion(region),
-		config.WithEndpointResolver(aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-			return aws.Endpoint{URL: endpoint}, nil
-		})),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return s3.NewFromConfig(cfg), nil
-}
-
-func validateFile(file *multipart.FileHeader) error {
-	if file.Size > MaxFileSize {
-		return fmt.Errorf("file size exceeds 5mb limit")
-	}
-
-	contentType := file.Header.Get("Content-Type")
-	if !strings.Contains(AllowedTypes, contentType) {
-		return fmt.Errorf("invalid file type: %s", contentType)
-	}
-
-	ext := filepath.Ext(file.Filename)
-	if !strings.Contains(".jpg.jpeg.png.webp", strings.ToLower(ext)) {
-		return fmt.Errorf("invalid file extension: %s", ext)
-	}
-
-	return nil
-}
-
-func generateFileName(originalName string) string {
-	ext := filepath.Ext(originalName)
-	timestamp := time.Now().UnixNano()
-	randomBytes := make([]byte, 8)
-	rand.Read(randomBytes)
-	return fmt.Sprintf("%d_%x%s", timestamp, randomBytes, ext)
 }
 
 func generateState() string {
@@ -186,22 +127,7 @@ func handleGoogleCallback(c *gin.Context) {
 		return
 	}
 
-	frontendURL := os.Getenv("FRONTEND_URL")
-	secure := false
-	if strings.HasPrefix(frontendURL, "https") {
-		secure = true
-	}
-
-	cookie := &http.Cookie{
-		Name:     "jwt",
-		Value:    jwtToken,
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
-		Secure:   secure,
-		SameSite: http.SameSiteNoneMode,
-	}
-	http.SetCookie(c.Writer, cookie)
+	c.SetCookie("jwt", jwtToken, 86400, "/", "", false, true) // 24 hours, HTTP-only, secure if HTTPS
 
 	// redirect to frontend
 	redirectToFrontend(c, "/")
@@ -602,73 +528,6 @@ func handleGetNotice(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"notice": notice})
 }
 
-func handleUpload(c *gin.Context) {
-	log.Printf("handleUpload: method=%s origin=%s content-type=%s", c.Request.Method, c.Request.Header.Get("Origin"), c.Request.Header.Get("Content-Type"))
-	r2Client, err := initR2Client()
-	if err != nil {
-		log.Fatalf("failed to initialize R2 client: %v", err)
-	}
-
-	_, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-
-	file, err := c.FormFile("image")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no image file provided"})
-		return
-	}
-
-	if err := validateFile(file); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// open file
-	src, err := file.Open()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to open file"})
-		log.Printf("failed to open file: %v", err)
-		return
-	}
-	defer src.Close()
-
-	// read file content
-	buf := make([]byte, file.Size)
-	if _, err := io.ReadFull(src, buf); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
-		log.Printf("failed to read file: %v", err)
-		return
-	}
-
-	fileName := generateFileName(file.Filename)
-	bucketName := os.Getenv("R2_BUCKET_NAME")
-
-	// upload
-	_, err = r2Client.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:      aws.String(bucketName),
-		Key:         aws.String(fileName),
-		Body:        bytes.NewReader(buf),
-		ContentType: aws.String(file.Header.Get("Content-Type")),
-		ACL:         "public-read",
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to upload file"})
-		log.Printf("failed to upload file: %v", err)
-		return
-	}
-
-	publicURL := os.Getenv("R2_PUBLIC_URL")
-	if publicURL == "" {
-		publicURL = os.Getenv("R2_ENDPOINT")
-	}
-	imageURL := fmt.Sprintf("%s/%s", publicURL, fileName)
-
-	c.JSON(http.StatusOK, gin.H{"url": imageURL})
-}
-
 func handlePushSubscribe(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
@@ -755,32 +614,11 @@ func main() {
 
 	r := gin.Default()
 
-	// CORS middleware - config for iOS PWA preflight + credentialed requests
+	// CORS middleware
 	config := cors.DefaultConfig()
 	frontendURL := os.Getenv("FRONTEND_URL")
 	config.AllowOrigins = []string{frontendURL}
-	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"}
-	config.ExposeHeaders = []string{"Content-Length"}
 	config.AllowCredentials = true
-
-	// allow minor origin variations
-	allowNull := strings.ToLower(os.Getenv("FRONTEND_ALLOW_NULL_ORIGIN")) == "true"
-	config.AllowOriginFunc = func(origin string) bool {
-		if origin == frontendURL {
-			return true
-		}
-		if strings.HasSuffix(frontendURL, "/") && origin == strings.TrimSuffix(frontendURL, "/") {
-			return true
-		}
-		if !strings.HasSuffix(frontendURL, "/") && origin == frontendURL+"/" {
-			return true
-		}
-		if allowNull && origin == "null" {
-			return true
-		}
-		return false
-	}
 	r.Use(cors.New(config))
 
 	r.GET("/", func(c *gin.Context) {
@@ -789,31 +627,12 @@ func main() {
 		})
 	})
 
-	r.OPTIONS("/upload", func(c *gin.Context) {
-		c.Status(http.StatusNoContent)
-	})
-
 	// oauth routes
 	r.GET("/auth/google", handleGoogleLogin)
 	r.GET("/auth/google/callback", handleGoogleCallback)
 	r.GET("/logout", func(c *gin.Context) {
-		// clear JWT cookie - mirror SameSite and Secure settings when setting it
-		frontendURL := os.Getenv("FRONTEND_URL")
-		secure := false
-		if strings.HasPrefix(frontendURL, "https") {
-			secure = true
-		}
-
-		cookie := &http.Cookie{
-			Name:     "jwt",
-			Value:    "",
-			Path:     "/",
-			Expires:  time.Unix(0, 0),
-			HttpOnly: true,
-			Secure:   secure,
-			SameSite: http.SameSiteNoneMode,
-		}
-		http.SetCookie(c.Writer, cookie)
+		// clear JWT cookie
+		c.SetCookie("jwt", "", -1, "/", "", false, true)
 		redirectToFrontend(c, "/")
 	})
 
@@ -827,7 +646,6 @@ func main() {
 		protected.PUT("/user/edit", handleUserEdit)
 		protected.POST("/notices/create", handleCreateNotice)
 		protected.GET("/notices/get", handleGetNotice)
-		protected.POST("/upload", handleUpload)
 		protected.POST("/push/subscribe", handlePushSubscribe)
 		protected.DELETE("/push/unsubscribe", handlePushUnsubscribe)
 	}

@@ -113,14 +113,10 @@ export default function CreateNoticePage() {
             formDataUpload.append("image", selectedFile);
 
             try {
-                const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/upload`,
-                    {
-                        method: "POST",
-                        body: formDataUpload,
-                        credentials: "include",
-                    }
-                );
+                const response = await fetch("/api/upload", {
+                    method: "POST",
+                    body: formDataUpload,
+                });
 
                 if (response.ok) {
                     const data = await response.json();
