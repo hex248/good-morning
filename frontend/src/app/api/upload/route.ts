@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         const size = f.size;
         const type = f.type;
         const originalName = f.name as string | undefined;
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        const maxSize = 20 * 1024 * 1024; // 20mb
         const allowedTypes = [
             "image/jpeg",
             "image/png",
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         ]);
         if (size > maxSize) {
             return NextResponse.json(
-                { error: "file size exceeds 5mb limit" },
+                { error: "file size exceeds limit" },
                 { status: 400 }
             );
         }
