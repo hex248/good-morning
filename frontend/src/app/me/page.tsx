@@ -103,9 +103,6 @@ export default function MePage() {
                             </Button>
                         </>
                     )}
-                    <p>
-                        <strong>Email:</strong> {user.email}
-                    </p>
                 </CardContent>
             </Card>
             {partner && (
