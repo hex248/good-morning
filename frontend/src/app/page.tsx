@@ -294,7 +294,7 @@ export default function Home() {
                             transition: "opacity 0.2s",
                         }}
                     >
-                        {!alreadySent && (
+                        {!alreadySent && partner && (
                             <Link
                                 href="/create-notice"
                                 className="cursor-pointer"
