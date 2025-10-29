@@ -174,15 +174,15 @@ export default function Home() {
                                                 unoptimized
                                             />
                                         )}
-                                        <div className="flex flex-col items-start">
-                                            <span className="text-4xl break-normal font-bold">
+                                        <div className="flex flex-col items-start text-left">
+                                            <span className="text-4xl whitespace-pre-wrap break-normal font-bold">
                                                 {notice.songTitle}
                                             </span>
-                                            <span className="text-2xl break-normal font-medium">
+                                            <span className="text-2xl whitespace-pre-wrap break-normal font-medium">
                                                 {notice.songArtist}
                                             </span>
                                             {notice.songExplanation && (
-                                                <span className="text-lg text-left whitespace-pre-wrap break-normal">
+                                                <span className="text-lg whitespace-pre-wrap break-normal">
                                                     “{notice.songExplanation}”
                                                 </span>
                                             )}
@@ -209,7 +209,7 @@ export default function Home() {
                     )}
                     <h1 className="text-5xl font-semibold">good morning!</h1>
                     {authenticated && user ? (
-                        <div className="flex flex-col items-center gap-4">
+                        <div className="flex flex-col items-center gap-4 mb-16">
                             {partner ? (
                                 <Card className="min-w-xs">
                                     <CardContent className="flex flex-col items-center gap-4">
@@ -263,9 +263,6 @@ export default function Home() {
                                     </CardContent>
                                 </Card>
                             )}
-                            <Link href="/me" className="cursor-pointer">
-                                <Button variant="outline">Me</Button>
-                            </Link>
                         </div>
                     ) : (
                         <Button onClick={loginWithGoogle} variant="outline">
